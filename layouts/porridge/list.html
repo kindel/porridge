@@ -40,7 +40,10 @@
         <h2 id="{{ printf "lps-list-%s" $co.id }}">{{ $co.set }}, in teaching order.</h2>
         <ol class="lps-card-list">
           {{ range $co.principles }}
-            {{ $lpRes := resources.Get (printf "data/lps/%s.json" .id) }}
+            {{ $lpRes := false }}
+            {{ if eq $co.id "amazon" }}
+              {{ $lpRes = resources.Get (printf "data/lps/%s.json" .id) }}
+            {{ end }}
             {{ if not $lpRes }}
               {{ $lpRes = resources.Get (printf "data/principles/%s/%s.json" $co.id .id) }}
             {{ end }}
@@ -52,7 +55,7 @@
                 {{ with $lp.group }}
                   <p class="lps-card-group">{{ replace . "-" " " }}</p>
                 {{ end }}
-                <h3><a href="{{ printf "/porridge/%s/%s" .id $q }}">{{ $lp.name }}</a></h3>
+                <h3><a href="{{ printf "/porridge/%s/%s/" $co.id .id }}">{{ $lp.name }}</a></h3>
                 <p>{{ $lp.definition }}</p>
               </article>
             </li>

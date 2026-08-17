@@ -3,29 +3,27 @@
   {{ $company := .Params.company | default "amazon" }}
   {{ $lp := dict }}
   {{ $principles := slice }}
-  {{ if eq $company "arm" }}
-    {{ $lpRes := resources.Get (printf "data/principles/arm/%s.json" $id) }}
-    {{ if not $lpRes }}{{ errorf "missing data/principles/arm/%s.json" $id }}{{ end }}
-    {{ $lp = $lpRes | transform.Unmarshal }}
-    {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
-    {{ range $pidx.companies }}
-      {{ if eq .id "arm" }}{{ $principles = .principles }}{{ end }}
-    {{ end }}
-  {{ else }}
-    {{ $lpRes := resources.Get (printf "data/lps/%s.json" $id) }}
-    {{ if not $lpRes }}{{ errorf "missing data/lps/%s.json" $id }}{{ end }}
-    {{ $lp = $lpRes | transform.Unmarshal }}
-    {{ $idx := resources.Get "data/lps/index.json" | transform.Unmarshal }}
-    {{ $principles = $idx.principles }}
+  {{ $lpRes := false }}
+  {{ if eq $company "amazon" }}
+    {{ $lpRes = resources.Get (printf "data/lps/%s.json" $id) }}
+  {{ end }}
+  {{ if not $lpRes }}
+    {{ $lpRes = resources.Get (printf "data/principles/%s/%s.json" $company $id) }}
+  {{ end }}
+  {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $company $id }}{{ end }}
+  {{ $lp = $lpRes | transform.Unmarshal }}
+  {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
+  {{ range $pidx.companies }}
+    {{ if eq .id $company }}{{ $principles = .principles }}{{ end }}
   {{ end }}
   {{ $home := "/porridge/" }}
-  {{ if eq $company "arm" }}{{ $home = "/porridge/?c=arm" }}{{ end }}
+  {{ if ne $company "amazon" }}{{ $home = printf "/porridge/?c=%s" $company }}{{ end }}
   <header class="kld-subhero" style="background-image: linear-gradient(90deg, rgba(17, 24, 39, 0.94) 0%, rgba(17, 24, 39, 0.78) 46%, rgba(17, 24, 39, 0.25) 100%), url('/images/porridge-hero.jpg');">
     {{ partial "site-navigation.html" . }}
     <div class="kld-subhero-inner">
-      <p class="kld-eyebrow"><a href="{{ $home }}">Porridge</a>{{ if eq $company "arm" }}{{ with $lp.group }} · {{ if eq . "one-arm" }}One Arm{{ else if eq . "accelerate-impact" }}Accelerate Impact{{ else }}{{ . }}{{ end }}{{ end }}{{ end }}</p>
+      <p class="kld-eyebrow"><a href="{{ $home }}">Porridge</a>{{ with $lp.group }} · {{ if eq . "one-arm" }}One Arm{{ else if eq . "accelerate-impact" }}Accelerate Impact{{ else }}{{ . }}{{ end }}{{ end }}</p>
       <h1>{{ $lp.name }}</h1>
-      <p>{{ partial "lp-tokens.html" (dict "text" $lp.definition "principles" $principles) }}</p>
+      <p>{{ partial "lp-tokens.html" (dict "text" $lp.definition "principles" $principles "company" $company) }}</p>
     </div>
   </header>
 {{ end }}
@@ -35,20 +33,21 @@
   {{ $company := .Params.company | default "amazon" }}
   {{ $lp := dict }}
   {{ $principles := slice }}
-  {{ if eq $company "arm" }}
-    {{ $lp = resources.Get (printf "data/principles/arm/%s.json" $id) | transform.Unmarshal }}
-    {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
-    {{ range $pidx.companies }}
-      {{ if eq .id "arm" }}{{ $principles = .principles }}{{ end }}
-    {{ end }}
-  {{ else }}
-    {{ $lp = resources.Get (printf "data/lps/%s.json" $id) | transform.Unmarshal }}
-    {{ $idx := resources.Get "data/lps/index.json" | transform.Unmarshal }}
-    {{ $principles = $idx.principles }}
+  {{ $lpRes := false }}
+  {{ if eq $company "amazon" }}
+    {{ $lpRes = resources.Get (printf "data/lps/%s.json" $id) }}
   {{ end }}
-  {{ $q := "" }}
-  {{ if eq $company "arm" }}{{ $q = "?c=arm" }}{{ end }}
-  {{ $home := printf "/porridge/%s" $q }}
+  {{ if not $lpRes }}
+    {{ $lpRes = resources.Get (printf "data/principles/%s/%s.json" $company $id) }}
+  {{ end }}
+  {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $company $id }}{{ end }}
+  {{ $lp = $lpRes | transform.Unmarshal }}
+  {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
+  {{ range $pidx.companies }}
+    {{ if eq .id $company }}{{ $principles = .principles }}{{ end }}
+  {{ end }}
+  {{ $home := "/porridge/" }}
+  {{ if ne $company "amazon" }}{{ $home = printf "/porridge/?c=%s" $company }}{{ end }}
   {{ $i := 0 }}
   {{ range $idxN, $p := $principles }}
     {{ if eq $p.id $id }}{{ $i = $idxN }}{{ end }}
@@ -63,7 +62,7 @@
       <ol>
         {{ range $principles }}
           <li{{ if eq .id $id }} class="is-current"{{ end }}>
-            <a href="{{ printf "/porridge/%s/%s" .id $q }}"{{ if eq .id $id }} aria-current="page"{{ end }}>{{ .name }}</a>
+            <a href="{{ printf "/porridge/%s/%s/" $company .id }}"{{ if eq .id $id }} aria-current="page"{{ end }}>{{ .name }}</a>
           </li>
         {{ end }}
       </ol>
@@ -74,7 +73,7 @@
       <p class="kld-section-label">Why it matters</p>
       <h2 id="lps-why-title">What this principle is for.</h2>
       {{ range . }}
-        <p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles) }}</p>
+        <p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles "company" $company) }}</p>
       {{ end }}
     </section>
     {{ end }}
@@ -83,7 +82,7 @@
       <p class="kld-section-label">Calibration</p>
       <h2 id="lps-cal-title">Under, just right, over.</h2>
       {{ with $lp.calibrationIntro }}
-        <p class="lps-cal-intro">{{ partial "lp-tokens.html" (dict "text" . "principles" $principles) }}</p>
+        <p class="lps-cal-intro">{{ partial "lp-tokens.html" (dict "text" . "principles" $principles "company" $company) }}</p>
       {{ end }}
       <div class="lps-table-wrap">
         <table class="lps-table">
@@ -99,9 +98,9 @@
             {{ range $lp.rows }}
               <tr>
                 <th scope="row">{{ .situation }}</th>
-                <td data-label="Under">{{ partial "lp-tokens.html" (dict "text" .under "principles" $principles) }}</td>
-                <td data-label="Just Right">{{ partial "lp-tokens.html" (dict "text" .justRight "principles" $principles) }}</td>
-                <td data-label="Over">{{ partial "lp-tokens.html" (dict "text" .over "principles" $principles) }}</td>
+                <td data-label="Under">{{ partial "lp-tokens.html" (dict "text" .under "principles" $principles "company" $company) }}</td>
+                <td data-label="Just Right">{{ partial "lp-tokens.html" (dict "text" .justRight "principles" $principles "company" $company) }}</td>
+                <td data-label="Over">{{ partial "lp-tokens.html" (dict "text" .over "principles" $principles "company" $company) }}</td>
               </tr>
             {{ end }}
           </tbody>
@@ -117,7 +116,7 @@
         {{ range . }}
           <article>
             <h3>{{ .title }}</h3>
-            <p>{{ partial "lp-tokens.html" (dict "text" .body "principles" $principles) }}</p>
+            <p>{{ partial "lp-tokens.html" (dict "text" .body "principles" $principles "company" $company) }}</p>
           </article>
         {{ end }}
       </div>
@@ -132,13 +131,13 @@
         {{ with .individual }}
           <article>
             <h3>Individual</h3>
-            <p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles) }}</p>
+            <p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles "company" $company) }}</p>
           </article>
         {{ end }}
         {{ with .manager }}
           <article>
             <h3>Manager</h3>
-            <p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles) }}</p>
+            <p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles "company" $company) }}</p>
           </article>
         {{ end }}
       </div>
@@ -151,7 +150,7 @@
       <h2 id="lps-deep-title">Questions that make the principle concrete.</h2>
       <ol class="lps-deepen">
         {{ range . }}
-          <li>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles) }}</li>
+          <li>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles "company" $company) }}</li>
         {{ end }}
       </ol>
     </section>
@@ -184,8 +183,8 @@
             {{ if eq .id $rel.id }}{{ $relName = .name }}{{ end }}
           {{ end }}
           <li>
-            <a href="{{ printf "/porridge/%s/%s" $rel.id $q }}">{{ $relName }}</a>
-            {{ with $rel.note }}<p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles) }}</p>{{ end }}
+            <a href="{{ printf "/porridge/%s/%s/" $company $rel.id }}">{{ $relName }}</a>
+            {{ with $rel.note }}<p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles "company" $company) }}</p>{{ end }}
           </li>
         {{ end }}
       </ul>
@@ -194,13 +193,13 @@
 
     <nav class="lps-pager" aria-label="Previous and next principle">
       {{ with $prev }}
-        <a class="lps-pager-prev" href="{{ printf "/porridge/%s/%s" .id $q }}"><span>Previous</span>{{ .name }}</a>
+        <a class="lps-pager-prev" href="{{ printf "/porridge/%s/%s/" $company .id }}"><span>Previous</span>{{ .name }}</a>
       {{ else }}
         <span class="lps-pager-prev is-empty"></span>
       {{ end }}
       <a class="lps-pager-index" href="{{ $home }}">All principles</a>
       {{ with $next }}
-        <a class="lps-pager-next" href="{{ printf "/porridge/%s/%s" .id $q }}"><span>Next</span>{{ .name }}</a>
+        <a class="lps-pager-next" href="{{ printf "/porridge/%s/%s/" $company .id }}"><span>Next</span>{{ .name }}</a>
       {{ else }}
         <span class="lps-pager-next is-empty"></span>
       {{ end }}

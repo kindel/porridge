@@ -21,7 +21,10 @@
   function recUrl(company, id) {
     return RECORD.replace("{company}", company).replace("{id}", id);
   }
-  function teachUrl(id) {
+  function teachUrl(company, id) {
+    // data/lps in kindel/biq is an Amazon-only copy. Asking it for another
+    // company's id returns Amazon's prose under that company's name.
+    if (company !== "amazon") return "";
     return TEACH.replace("{id}", id);
   }
   function esc(s) {
@@ -123,7 +126,9 @@
         if (!r.ok) throw new Error("missing record");
         return r.json();
       }).then(function (rec) {
-        return fetch(teachUrl(p)).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+        var turl = teachUrl(c, p);
+        if (!turl) return renderSingle(bank, c, rec, null);
+        return fetch(turl).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
           .then(function (teach) { renderSingle(bank, c, rec, teach); });
       }).catch(function () { renderList(bank, c); });
     }).catch(function (err) {
