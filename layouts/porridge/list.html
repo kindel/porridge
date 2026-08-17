@@ -1,0 +1,79 @@
+{{ define "header" }}
+  {{ $idxRes := resources.Get "data/lps/index.json" }}
+  {{ if not $idxRes }}{{ errorf "missing data/lps/index.json; bump kindel/biq and mount data to assets/data" }}{{ end }}
+  {{ $pidxRes := resources.Get "data/principles/index.json" }}
+  {{ if not $pidxRes }}{{ errorf "missing data/principles/index.json; bump kindel/principles and mount data to assets/data/principles" }}{{ end }}
+  <header class="kld-subhero" style="background-image: linear-gradient(90deg, rgba(17, 24, 39, 0.94) 0%, rgba(17, 24, 39, 0.78) 46%, rgba(17, 24, 39, 0.25) 100%), url('/images/porridge-hero.jpg');">
+    {{ partial "site-navigation.html" . }}
+    <div class="kld-subhero-inner">
+      <h1>Porridge</h1>
+      <p>Just as it is possible to not live a principle, it is possible to over-do them. The key is to find the balance and be like <a href="https://blog.kindel.com/2019/03/21/just-right-porridge-and-leadership-principles/">mama bear's porridge: Just Right</a>.</p>
+    </div>
+  </header>
+{{ end }}
+
+{{ define "main" }}
+  {{ $idx := resources.Get "data/lps/index.json" | transform.Unmarshal }}
+  {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
+  {{ $default := "" }}
+  {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
+  <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
+  <article class="kld-topics-page lps-page">
+    <section class="lps-intro" aria-labelledby="lps-how-title">
+      <p class="kld-section-label">How to use it</p>
+      <h2 id="lps-how-title">Get the balance right.</h2>
+      <p>A great way to be thoughtful about this is to apply a Just Right, Over, Under taxonomy. Pick the row that matches what happened.</p>
+      <label class="lps-company-label" id="lps-company-label" for="lps-company">Company</label>
+      <select id="lps-company" class="lps-select" aria-labelledby="lps-company-label">
+        {{ range $pidx.companies }}
+          <option value="{{ .id }}">{{ .name }}</option>
+        {{ end }}
+      </select>
+      <p>To add another company's set, <a href="https://github.com/kindel/principles/issues/new">open an issue on kindel/principles</a>.</p>
+    </section>
+    {{ range $pidx.companies }}
+      {{ $co := . }}
+      {{ $q := "" }}
+      {{ if ne $co.id $default }}{{ $q = printf "?c=%s" $co.id }}{{ end }}
+      <section class="lps-index" data-company-set="{{ $co.id }}"{{ if ne $co.id $default }} hidden{{ end }} aria-labelledby="{{ printf "lps-list-%s" $co.id }}">
+        <p class="kld-section-label">The set</p>
+        <h2 id="{{ printf "lps-list-%s" $co.id }}">{{ $co.set }}, in teaching order.</h2>
+        <ol class="lps-card-list">
+          {{ range $co.principles }}
+            {{ $lpRes := resources.Get (printf "data/lps/%s.json" .id) }}
+            {{ if not $lpRes }}
+              {{ $lpRes = resources.Get (printf "data/principles/%s/%s.json" $co.id .id) }}
+            {{ end }}
+            {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $co.id .id }}{{ end }}
+            {{ $lp := $lpRes | transform.Unmarshal }}
+            <li>
+              <article class="lps-card">
+                <span class="lps-card-num">{{ .sort }}</span>
+                {{ with $lp.group }}
+                  <p class="lps-card-group">{{ replace . "-" " " }}</p>
+                {{ end }}
+                <h3><a href="{{ printf "/porridge/%s/%s" .id $q }}">{{ $lp.name }}</a></h3>
+                <p>{{ $lp.definition }}</p>
+              </article>
+            </li>
+          {{ end }}
+        </ol>
+      </section>
+    {{ end }}
+    {{ with $idx.blog }}
+    <section class="lps-section" data-company-set="{{ $default }}" aria-labelledby="lps-blog-title">
+      <p class="kld-section-label">From the blog</p>
+      <h2 id="lps-blog-title">Writing that goes with the set.</h2>
+      <ul class="lps-blog">
+        {{ range . }}
+          <li>
+            <a href="{{ .url }}">{{ .title }}</a>
+            {{ with .note }}<p>{{ . }}</p>{{ end }}
+          </li>
+        {{ end }}
+      </ul>
+    </section>
+    {{ end }}
+  </article>
+  <script src="{{ "js/porridge.js" | relURL }}"></script>
+{{ end }}

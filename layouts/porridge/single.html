@@ -1,0 +1,209 @@
+{{ define "header" }}
+  {{ $id := .Params.lpId }}
+  {{ $company := .Params.company | default "amazon" }}
+  {{ $lp := dict }}
+  {{ $principles := slice }}
+  {{ if eq $company "arm" }}
+    {{ $lpRes := resources.Get (printf "data/principles/arm/%s.json" $id) }}
+    {{ if not $lpRes }}{{ errorf "missing data/principles/arm/%s.json" $id }}{{ end }}
+    {{ $lp = $lpRes | transform.Unmarshal }}
+    {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
+    {{ range $pidx.companies }}
+      {{ if eq .id "arm" }}{{ $principles = .principles }}{{ end }}
+    {{ end }}
+  {{ else }}
+    {{ $lpRes := resources.Get (printf "data/lps/%s.json" $id) }}
+    {{ if not $lpRes }}{{ errorf "missing data/lps/%s.json" $id }}{{ end }}
+    {{ $lp = $lpRes | transform.Unmarshal }}
+    {{ $idx := resources.Get "data/lps/index.json" | transform.Unmarshal }}
+    {{ $principles = $idx.principles }}
+  {{ end }}
+  {{ $home := "/porridge/" }}
+  {{ if eq $company "arm" }}{{ $home = "/porridge/?c=arm" }}{{ end }}
+  <header class="kld-subhero" style="background-image: linear-gradient(90deg, rgba(17, 24, 39, 0.94) 0%, rgba(17, 24, 39, 0.78) 46%, rgba(17, 24, 39, 0.25) 100%), url('/images/porridge-hero.jpg');">
+    {{ partial "site-navigation.html" . }}
+    <div class="kld-subhero-inner">
+      <p class="kld-eyebrow"><a href="{{ $home }}">Porridge</a>{{ if eq $company "arm" }}{{ with $lp.group }} · {{ if eq . "one-arm" }}One Arm{{ else if eq . "accelerate-impact" }}Accelerate Impact{{ else }}{{ . }}{{ end }}{{ end }}{{ end }}</p>
+      <h1>{{ $lp.name }}</h1>
+      <p>{{ partial "lp-tokens.html" (dict "text" $lp.definition "principles" $principles) }}</p>
+    </div>
+  </header>
+{{ end }}
+
+{{ define "main" }}
+  {{ $id := .Params.lpId }}
+  {{ $company := .Params.company | default "amazon" }}
+  {{ $lp := dict }}
+  {{ $principles := slice }}
+  {{ if eq $company "arm" }}
+    {{ $lp = resources.Get (printf "data/principles/arm/%s.json" $id) | transform.Unmarshal }}
+    {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
+    {{ range $pidx.companies }}
+      {{ if eq .id "arm" }}{{ $principles = .principles }}{{ end }}
+    {{ end }}
+  {{ else }}
+    {{ $lp = resources.Get (printf "data/lps/%s.json" $id) | transform.Unmarshal }}
+    {{ $idx := resources.Get "data/lps/index.json" | transform.Unmarshal }}
+    {{ $principles = $idx.principles }}
+  {{ end }}
+  {{ $q := "" }}
+  {{ if eq $company "arm" }}{{ $q = "?c=arm" }}{{ end }}
+  {{ $home := printf "/porridge/%s" $q }}
+  {{ $i := 0 }}
+  {{ range $idxN, $p := $principles }}
+    {{ if eq $p.id $id }}{{ $i = $idxN }}{{ end }}
+  {{ end }}
+  {{ $prev := false }}
+  {{ $next := false }}
+  {{ if gt $i 0 }}{{ $prev = index $principles (sub $i 1) }}{{ end }}
+  {{ if lt $i (sub (len $principles) 1) }}{{ $next = index $principles (add $i 1) }}{{ end }}
+  <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
+  <article class="kld-topics-page lps-page lps-principle">
+    <nav class="lps-jump" aria-label="All principles">
+      <ol>
+        {{ range $principles }}
+          <li{{ if eq .id $id }} class="is-current"{{ end }}>
+            <a href="{{ printf "/porridge/%s/%s" .id $q }}"{{ if eq .id $id }} aria-current="page"{{ end }}>{{ .name }}</a>
+          </li>
+        {{ end }}
+      </ol>
+    </nav>
+
+    {{ with $lp.why }}
+    <section class="lps-section" aria-labelledby="lps-why-title">
+      <p class="kld-section-label">Why it matters</p>
+      <h2 id="lps-why-title">What this principle is for.</h2>
+      {{ range . }}
+        <p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles) }}</p>
+      {{ end }}
+    </section>
+    {{ end }}
+
+    <section class="lps-section" aria-labelledby="lps-cal-title">
+      <p class="kld-section-label">Calibration</p>
+      <h2 id="lps-cal-title">Under, just right, over.</h2>
+      {{ with $lp.calibrationIntro }}
+        <p class="lps-cal-intro">{{ partial "lp-tokens.html" (dict "text" . "principles" $principles) }}</p>
+      {{ end }}
+      <div class="lps-table-wrap">
+        <table class="lps-table">
+          <thead>
+            <tr>
+              <th scope="col">Situation</th>
+              <th scope="col">Under</th>
+              <th scope="col">Just Right</th>
+              <th scope="col">Over</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{ range $lp.rows }}
+              <tr>
+                <th scope="row">{{ .situation }}</th>
+                <td data-label="Under">{{ partial "lp-tokens.html" (dict "text" .under "principles" $principles) }}</td>
+                <td data-label="Just Right">{{ partial "lp-tokens.html" (dict "text" .justRight "principles" $principles) }}</td>
+                <td data-label="Over">{{ partial "lp-tokens.html" (dict "text" .over "principles" $principles) }}</td>
+              </tr>
+            {{ end }}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    {{ with $lp.examples }}
+    <section class="lps-section" aria-labelledby="lps-ex-title">
+      <p class="kld-section-label">Examples</p>
+      <h2 id="lps-ex-title">What it looks like in the work.</h2>
+      <div class="lps-examples">
+        {{ range . }}
+          <article>
+            <h3>{{ .title }}</h3>
+            <p>{{ partial "lp-tokens.html" (dict "text" .body "principles" $principles) }}</p>
+          </article>
+        {{ end }}
+      </div>
+    </section>
+    {{ end }}
+
+    {{ with $lp.looksLike }}
+    <section class="lps-section" aria-labelledby="lps-looks-title">
+      <p class="kld-section-label">In the role</p>
+      <h2 id="lps-looks-title">Individual and manager.</h2>
+      <div class="lps-looks">
+        {{ with .individual }}
+          <article>
+            <h3>Individual</h3>
+            <p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles) }}</p>
+          </article>
+        {{ end }}
+        {{ with .manager }}
+          <article>
+            <h3>Manager</h3>
+            <p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles) }}</p>
+          </article>
+        {{ end }}
+      </div>
+    </section>
+    {{ end }}
+
+    {{ with $lp.deepen }}
+    <section class="lps-section" aria-labelledby="lps-deep-title">
+      <p class="kld-section-label">Go deeper</p>
+      <h2 id="lps-deep-title">Questions that make the principle concrete.</h2>
+      <ol class="lps-deepen">
+        {{ range . }}
+          <li>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles) }}</li>
+        {{ end }}
+      </ol>
+    </section>
+    {{ end }}
+
+    {{ with $lp.blog }}
+    <section class="lps-section" aria-labelledby="lps-blog-title">
+      <p class="kld-section-label">From the blog</p>
+      <h2 id="lps-blog-title">Writing that goes deeper.</h2>
+      <ul class="lps-blog">
+        {{ range . }}
+          <li>
+            <a href="{{ .url }}">{{ .title }}</a>
+            {{ with .note }}<p>{{ . }}</p>{{ end }}
+          </li>
+        {{ end }}
+      </ul>
+    </section>
+    {{ end }}
+
+    {{ with $lp.related }}
+    <section class="lps-section" aria-labelledby="lps-rel-title">
+      <p class="kld-section-label">Related</p>
+      <h2 id="lps-rel-title">Principles that sit next to this one.</h2>
+      <ul class="lps-related">
+        {{ range . }}
+          {{ $rel := . }}
+          {{ $relName := $rel.id }}
+          {{ range $principles }}
+            {{ if eq .id $rel.id }}{{ $relName = .name }}{{ end }}
+          {{ end }}
+          <li>
+            <a href="{{ printf "/porridge/%s/%s" $rel.id $q }}">{{ $relName }}</a>
+            {{ with $rel.note }}<p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles) }}</p>{{ end }}
+          </li>
+        {{ end }}
+      </ul>
+    </section>
+    {{ end }}
+
+    <nav class="lps-pager" aria-label="Previous and next principle">
+      {{ with $prev }}
+        <a class="lps-pager-prev" href="{{ printf "/porridge/%s/%s" .id $q }}"><span>Previous</span>{{ .name }}</a>
+      {{ else }}
+        <span class="lps-pager-prev is-empty"></span>
+      {{ end }}
+      <a class="lps-pager-index" href="{{ $home }}">All principles</a>
+      {{ with $next }}
+        <a class="lps-pager-next" href="{{ printf "/porridge/%s/%s" .id $q }}"><span>Next</span>{{ .name }}</a>
+      {{ else }}
+        <span class="lps-pager-next is-empty"></span>
+      {{ end }}
+    </nav>
+  </article>
+{{ end }}
