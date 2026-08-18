@@ -26,8 +26,8 @@ The standalone page fetches `kindel/principles` from jsDelivr. A host that alrea
 <script>
   window.PORRIDGE = {
     principlesIndex: "/data/principles/index.json",
-    principlesRecord: "/data/principles/{company}/{id}.json",
-    teaching: "/data/lps/{id}.json"
+    principlesRecord: "/data/principles/{company}/{slug}.json",
+    teaching: "/data/lps/{slug}.json"
   };
 </script>
 ```
