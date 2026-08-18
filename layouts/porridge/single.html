@@ -173,14 +173,12 @@
           </thead>
           <tbody>
             {{ range $mergedRows }}
-              {{ $isShared := and ._sourceCompany (ne ._sourceCompany $company) }}
               {{ $isQuoted := eq .words "quoted" }}
-              {{ $showSource := or $isShared $isQuoted }}
-              <tr{{ if $showSource }} class="lps-row-shared"{{ end }}>
+              <tr{{ if $isQuoted }} class="lps-row-shared"{{ end }}>
                 <th scope="row">
                   {{ .situation }}
-                  {{ if $showSource }}
-                    <span class="lps-row-source">{{ if $isQuoted }}quoted{{ else }}{{ ._sourceCompanyName }}{{ end }}</span>
+                  {{ if $isQuoted }}
+                    <span class="lps-row-source">quoted</span>
                   {{ end }}
                 </th>
                 <td data-label="Under">{{ partial "lp-tokens.html" (dict "text" .under "principles" $principles "company" $company) }}</td>
