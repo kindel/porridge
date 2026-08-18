@@ -1,16 +1,16 @@
 {{ define "header" }}
-  {{ $id := .Params.lpId }}
+  {{ $slug := .Params.lpId }}
   {{ $company := .Params.company | default "amazon" }}
   {{ $lp := dict }}
   {{ $principles := slice }}
   {{ $lpRes := false }}
   {{ if eq $company "amazon" }}
-    {{ $lpRes = resources.Get (printf "data/lps/%s.json" $id) }}
+    {{ $lpRes = resources.Get (printf "data/lps/%s.json" $slug) }}
   {{ end }}
   {{ if not $lpRes }}
-    {{ $lpRes = resources.Get (printf "data/principles/%s/%s.json" $company $id) }}
+    {{ $lpRes = resources.Get (printf "data/principles/%s/%s.json" $company $slug) }}
   {{ end }}
-  {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $company $id }}{{ end }}
+  {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $company $slug }}{{ end }}
   {{ $lp = $lpRes | transform.Unmarshal }}
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
   {{ range $pidx.companies }}
@@ -29,18 +29,18 @@
 {{ end }}
 
 {{ define "main" }}
-  {{ $id := .Params.lpId }}
+  {{ $slug := .Params.lpId }}
   {{ $company := .Params.company | default "amazon" }}
   {{ $lp := dict }}
   {{ $principles := slice }}
   {{ $lpRes := false }}
   {{ if eq $company "amazon" }}
-    {{ $lpRes = resources.Get (printf "data/lps/%s.json" $id) }}
+    {{ $lpRes = resources.Get (printf "data/lps/%s.json" $slug) }}
   {{ end }}
   {{ if not $lpRes }}
-    {{ $lpRes = resources.Get (printf "data/principles/%s/%s.json" $company $id) }}
+    {{ $lpRes = resources.Get (printf "data/principles/%s/%s.json" $company $slug) }}
   {{ end }}
-  {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $company $id }}{{ end }}
+  {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $company $slug }}{{ end }}
   {{ $lp = $lpRes | transform.Unmarshal }}
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
   {{ range $pidx.companies }}
@@ -50,7 +50,7 @@
   {{ if ne $company "amazon" }}{{ $home = printf "/porridge/?c=%s" $company }}{{ end }}
   {{ $i := 0 }}
   {{ range $idxN, $p := $principles }}
-    {{ if eq $p.id $id }}{{ $i = $idxN }}{{ end }}
+    {{ if eq $p.slug $slug }}{{ $i = $idxN }}{{ end }}
   {{ end }}
   {{ $prev := false }}
   {{ $next := false }}
@@ -61,8 +61,8 @@
     <nav class="lps-jump" aria-label="All principles">
       <ol>
         {{ range $principles }}
-          <li{{ if eq .id $id }} class="is-current"{{ end }}>
-            <a href="{{ printf "/porridge/%s/%s/" $company .id }}"{{ if eq .id $id }} aria-current="page"{{ end }}>{{ .name }}</a>
+          <li{{ if eq .slug $slug }} class="is-current"{{ end }}>
+            <a href="{{ printf "/porridge/%s/%s/" $company .slug }}"{{ if eq .slug $slug }} aria-current="page"{{ end }}>{{ .name }}</a>
           </li>
         {{ end }}
       </ol>
@@ -180,7 +180,7 @@
           {{ $rel := . }}
           {{ $relName := $rel.id }}
           {{ range $principles }}
-            {{ if eq .id $rel.id }}{{ $relName = .name }}{{ end }}
+            {{ if eq .slug $rel.id }}{{ $relName = .name }}{{ end }}
           {{ end }}
           <li>
             <a href="{{ printf "/porridge/%s/%s/" $company $rel.id }}">{{ $relName }}</a>
@@ -193,13 +193,13 @@
 
     <nav class="lps-pager" aria-label="Previous and next principle">
       {{ with $prev }}
-        <a class="lps-pager-prev" href="{{ printf "/porridge/%s/%s/" $company .id }}"><span>Previous</span>{{ .name }}</a>
+        <a class="lps-pager-prev" href="{{ printf "/porridge/%s/%s/" $company .slug }}"><span>Previous</span>{{ .name }}</a>
       {{ else }}
         <span class="lps-pager-prev is-empty"></span>
       {{ end }}
       <a class="lps-pager-index" href="{{ $home }}">All principles</a>
       {{ with $next }}
-        <a class="lps-pager-next" href="{{ printf "/porridge/%s/%s/" $company .id }}"><span>Next</span>{{ .name }}</a>
+        <a class="lps-pager-next" href="{{ printf "/porridge/%s/%s/" $company .slug }}"><span>Next</span>{{ .name }}</a>
       {{ else }}
         <span class="lps-pager-next is-empty"></span>
       {{ end }}

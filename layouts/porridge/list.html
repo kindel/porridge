@@ -42,12 +42,12 @@
           {{ range $co.principles }}
             {{ $lpRes := false }}
             {{ if eq $co.id "amazon" }}
-              {{ $lpRes = resources.Get (printf "data/lps/%s.json" .id) }}
+              {{ $lpRes = resources.Get (printf "data/lps/%s.json" .slug) }}
             {{ end }}
             {{ if not $lpRes }}
-              {{ $lpRes = resources.Get (printf "data/principles/%s/%s.json" $co.id .id) }}
+              {{ $lpRes = resources.Get (printf "data/principles/%s/%s.json" $co.id .slug) }}
             {{ end }}
-            {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $co.id .id }}{{ end }}
+            {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $co.id .slug }}{{ end }}
             {{ $lp := $lpRes | transform.Unmarshal }}
             <li>
               <article class="lps-card">
@@ -55,7 +55,7 @@
                 {{ with $lp.group }}
                   <p class="lps-card-group">{{ replace . "-" " " }}</p>
                 {{ end }}
-                <h3><a href="{{ printf "/porridge/%s/%s/" $co.id .id }}">{{ $lp.name }}</a></h3>
+                <h3><a href="{{ printf "/porridge/%s/%s/" $co.id .slug }}">{{ $lp.name }}</a></h3>
                 <p>{{ $lp.definition }}</p>
               </article>
             </li>

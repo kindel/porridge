@@ -1,8 +1,8 @@
 (function () {
   var cfg = window.PORRIDGE || {};
   var INDEX = cfg.principlesIndex || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/index.json";
-  var RECORD = cfg.principlesRecord || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/{company}/{id}.json";
-  var TEACH = cfg.teaching || "https://cdn.jsdelivr.net/gh/kindel/biq@main/data/lps/{id}.json";
+  var RECORD = cfg.principlesRecord || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/{company}/{slug}.json";
+  var TEACH = cfg.teaching || "https://cdn.jsdelivr.net/gh/kindel/biq@main/data/lps/{slug}.json";
   var root = document.getElementById("porridge-root");
   if (!root) return;
 
@@ -18,14 +18,14 @@
     });
     window.history.replaceState({}, "", u.pathname + u.search + u.hash);
   }
-  function recUrl(company, id) {
-    return RECORD.replace("{company}", company).replace("{id}", id);
+  function recUrl(company, slug) {
+    return RECORD.replace("{company}", company).replace("{slug}", slug);
   }
-  function teachUrl(company, id) {
+  function teachUrl(company, slug) {
     // data/lps in kindel/biq is an Amazon-only copy. Asking it for another
-    // company's id returns Amazon's prose under that company's name.
+    // company's slug returns Amazon's prose under that company's name.
     if (company !== "amazon") return "";
-    return TEACH.replace("{id}", id);
+    return TEACH.replace("{slug}", slug);
   }
   function esc(s) {
     return String(s == null ? "" : s)
@@ -45,8 +45,8 @@
       return "<option value=\"" + esc(c.id) + "\"" + (c.id === companyId ? " selected" : "") + ">" + esc(c.name) + "</option>";
     }).join("");
     var cards = (co.principles || []).map(function (p) {
-      var q = companyId === def ? "" : ("?c=" + encodeURIComponent(companyId) + "&p=" + encodeURIComponent(p.id));
-      if (companyId === def) q = "?p=" + encodeURIComponent(p.id);
+      var q = companyId === def ? "" : ("?c=" + encodeURIComponent(companyId) + "&p=" + encodeURIComponent(p.slug));
+      if (companyId === def) q = "?p=" + encodeURIComponent(p.slug);
       var group = p.group ? "<p class=\"lps-card-group\">" + esc(groupLabel(p.group)) + "</p>" : "";
       return "<li><article class=\"lps-card\"><span class=\"lps-card-num\">" + esc(p.sort) + "</span>" +
         group + "<h3><a href=\"" + q + "\">" + esc(p.name) + "</a></h3><p>" + esc(p.definition || "") + "</p></article></li>";
@@ -83,7 +83,7 @@
         "<td data-label=\"Over\">" + esc(r.over) + "</td></tr>";
     }).join("");
     var jump = (co.principles || []).map(function (p) {
-      var q = "?p=" + encodeURIComponent(p.id) + (companyId === def ? "" : "&c=" + encodeURIComponent(companyId));
+      var q = "?p=" + encodeURIComponent(p.slug) + (companyId === def ? "" : "&c=" + encodeURIComponent(companyId));
       var cur = p.id === rec.id ? " class=\"is-current\"" : "";
       return "<li" + cur + "><a href=\"" + q + "\">" + esc(p.name) + "</a></li>";
     }).join("");
@@ -113,7 +113,7 @@
         companies.forEach(function (co) {
           (co.principles || []).forEach(function (pr) {
             if (pr.definition) return;
-            pending.push(fetch(recUrl(co.id, pr.id)).then(function (r) { return r.json(); }).then(function (rec) {
+            pending.push(fetch(recUrl(co.id, pr.slug)).then(function (r) { return r.json(); }).then(function (rec) {
               pr.definition = rec.definition;
               pr.group = rec.group;
               pr.name = rec.name || pr.name;

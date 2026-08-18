@@ -1,8 +1,8 @@
 {{- $text := .text -}}
 {{- $company := .company | default "amazon" -}}
 {{- range .principles -}}
-  {{- $token := printf "{lp:%s}" .id -}}
-  {{- $link := printf "<a href=\"/porridge/%s/%s/\">%s</a>" $company .id .name -}}
+  {{- $token := printf "{lp:%s}" .slug -}}
+  {{- $link := printf "<a href=\"/porridge/%s/%s/\">%s</a>" $company .slug .name -}}
   {{- $text = replace $text $token $link -}}
 {{- end -}}
 {{- $text | safeHTML -}}
