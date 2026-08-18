@@ -1,0 +1,42 @@
+name: Sync from principles
+
+on:
+  repository_dispatch:
+    types: [cascade]
+  workflow_dispatch:
+
+concurrency:
+  group: cascade-principles
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Write missing stubs
+        run: python3 scripts/sync_from_principles.py
+      - name: Open a pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: cascade/principles
+          delete-branch: true
+          add-paths: |
+            content/porridge
+            .kindel/last-sync.txt
+          commit-message: Add Porridge pages for new principles.
+          title: Add Porridge pages for new principles
+          body: |
+            Stubs generated from `kindel/principles` so each principle has a URL.
+
+            Existing pages are left alone. Company indexes stay unrendered.
+            Calibration still comes from the principles module at site-pin time.
+
+            See `.kindel/last-sync.txt` for the SHA this ran against.
