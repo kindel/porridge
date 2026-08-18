@@ -84,12 +84,17 @@
       {{ with $lp.calibrationIntro }}
         <p class="lps-cal-intro">{{ partial "lp-tokens.html" (dict "text" . "principles" $principles "company" $company) }}</p>
       {{ end }}
-      {{/* Build principle ID lookup: id -> {company, slug, name} */}}
-      {{ $principleMap := dict }}
+      {{/* Build lookups: by numeric id and by company:slug */}}
+      {{ $principleById := dict }}
+      {{ $principleByKey := dict }}
+      {{ $companyNames := dict }}
       {{ range $pidx.companies }}
         {{ $co := .id }}
+        {{ $companyNames = merge $companyNames (dict $co .name) }}
         {{ range .principles }}
-          {{ $principleMap = merge $principleMap (dict (string .id) (dict "company" $co "slug" .slug "name" .name "facets" .facets)) }}
+          {{ $entry := dict "id" .id "company" $co "slug" .slug "name" .name "facets" .facets }}
+          {{ $principleById = merge $principleById (dict (string .id) $entry) }}
+          {{ $principleByKey = merge $principleByKey (dict (printf "%s:%s" $co .slug) $entry) }}
         {{ end }}
       {{ end }}
       {{/* Try to load facets.json; tolerate missing file (old pin) */}}
@@ -100,10 +105,15 @@
       {{ range $facetsData.facets }}
         {{ $facetMap = merge $facetMap (dict .id .) }}
       {{ end }}
-      {{/* Get current principle's entry from the index (for its facets array) */}}
-      {{ $thisPrincipleEntry := index $principleMap (string $lp.id) }}
+      {{/* Look up current principle by company + slug (page params), not $lp.id */}}
+      {{ $thisKey := printf "%s:%s" $company $slug }}
+      {{ $thisPrincipleEntry := index $principleByKey $thisKey }}
+      {{ $thisNumericId := 0 }}
       {{ $thisFacets := slice }}
-      {{ with $thisPrincipleEntry }}{{ $thisFacets = .facets | default slice }}{{ end }}
+      {{ with $thisPrincipleEntry }}
+        {{ $thisNumericId = .id }}
+        {{ $thisFacets = .facets | default slice }}
+      {{ end }}
       {{/* Gather rows from facet map: (principle_id, row_id) -> row data with source */}}
       {{ $seenKeys := slice }}
       {{ $mergedRows := slice }}
@@ -117,7 +127,7 @@
             {{ $key := printf "%s:%s" $srcPid $rowId }}
             {{ if not (in $seenKeys $key) }}
               {{ $seenKeys = $seenKeys | append $key }}
-              {{ $srcEntry := index $principleMap $srcPid }}
+              {{ $srcEntry := index $principleById $srcPid }}
               {{ if $srcEntry }}
                 {{/* Load the source principle's JSON to get the row */}}
                 {{ $srcRes := false }}
@@ -129,9 +139,10 @@
                 {{ end }}
                 {{ if $srcRes }}
                   {{ $srcLp := $srcRes | transform.Unmarshal }}
+                  {{ $srcCompanyName := index $companyNames $srcEntry.company }}
                   {{ range $srcLp.rows }}
                     {{ if eq .id $rowId }}
-                      {{ $rowWithSource := merge . (dict "_sourceCompany" $srcEntry.company "_sourceName" $srcEntry.name "_sourceSlug" $srcEntry.slug "_sourcePid" $srcPid) }}
+                      {{ $rowWithSource := merge . (dict "_sourceCompany" $srcEntry.company "_sourceCompanyName" $srcCompanyName "_sourcePid" $srcPid) }}
                       {{ $mergedRows = $mergedRows | append $rowWithSource }}
                     {{ end }}
                   {{ end }}
@@ -141,8 +152,8 @@
           {{ end }}
         {{ end }}
       {{ end }}
-      {{/* Add local rows not already in merged set */}}
-      {{ $localPid := string $lp.id }}
+      {{/* Add local rows not already in merged set, using numeric id from index */}}
+      {{ $localPid := string $thisNumericId }}
       {{ range $lp.rows }}
         {{ $key := printf "%s:%s" $localPid .id }}
         {{ if not (in $seenKeys $key) }}
@@ -169,7 +180,7 @@
                 <th scope="row">
                   {{ .situation }}
                   {{ if $showSource }}
-                    <span class="lps-row-source">{{ if $isQuoted }}quoted{{ else }}{{ ._sourceName }}{{ end }}</span>
+                    <span class="lps-row-source">{{ if $isQuoted }}quoted{{ else }}{{ ._sourceCompanyName }}{{ end }}</span>
                   {{ end }}
                 </th>
                 <td data-label="Under">{{ partial "lp-tokens.html" (dict "text" .under "principles" $principles "company" $company) }}</td>
