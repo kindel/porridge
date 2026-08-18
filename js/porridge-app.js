@@ -2,6 +2,7 @@
   var cfg = window.PORRIDGE || {};
   var INDEX = cfg.principlesIndex || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/index.json";
   var RECORD = cfg.principlesRecord || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/{company}/{slug}.json";
+  var FACETS = cfg.facetsJson || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/facets.json";
   var TEACH = cfg.teaching || "https://cdn.jsdelivr.net/gh/kindel/biq@main/data/lps/{slug}.json";
   var root = document.getElementById("porridge-root");
   if (!root) return;
@@ -71,13 +72,62 @@
     });
   }
 
-  function renderSingle(bank, companyId, rec, teach) {
+  function renderSingle(bank, companyId, rec, teach, facetsData, principleMap, recCache) {
     var companies = bank.companies || [];
     var def = companies[0] && companies[0].id;
     var co = companies.filter(function (c) { return c.id === companyId; })[0] || companies[0];
     var listQ = companyId === def ? "" : ("?c=" + encodeURIComponent(companyId));
-    var rows = (rec.rows || []).map(function (r) {
-      return "<tr><th scope=\"row\">" + esc(r.situation) + "</th>" +
+    var thisPrincipleEntry = principleMap[rec.id] || {};
+    var thisFacets = thisPrincipleEntry.facets || [];
+    var facetMap = {};
+    (facetsData.facets || []).forEach(function (f) { facetMap[f.id] = f; });
+    var seenKeys = {};
+    var mergedRows = [];
+    thisFacets.forEach(function (facetId) {
+      var facet = facetMap[facetId];
+      if (!facet) return;
+      (facet.rows || []).forEach(function (ref) {
+        var srcPid = String(ref.principle);
+        var rowId = ref.id;
+        var key = srcPid + ":" + rowId;
+        if (seenKeys[key]) return;
+        seenKeys[key] = true;
+        var srcEntry = principleMap[srcPid];
+        if (!srcEntry) return;
+        var srcRec = recCache[srcPid];
+        if (!srcRec) return;
+        (srcRec.rows || []).forEach(function (r) {
+          if (r.id === rowId) {
+            mergedRows.push({
+              id: r.id,
+              situation: r.situation,
+              under: r.under,
+              justRight: r.justRight,
+              over: r.over,
+              words: r.words,
+              _sourceCompany: srcEntry.company,
+              _sourceName: srcEntry.name,
+              _sourcePid: srcPid
+            });
+          }
+        });
+      });
+    });
+    var localPid = String(rec.id);
+    (rec.rows || []).forEach(function (r) {
+      var key = localPid + ":" + r.id;
+      if (seenKeys[key]) return;
+      seenKeys[key] = true;
+      mergedRows.push(r);
+    });
+    var rows = mergedRows.map(function (r) {
+      var isShared = r._sourceCompany && r._sourceCompany !== companyId;
+      var isQuoted = r.words === "quoted";
+      var showSource = isShared || isQuoted;
+      var srcLabel = isQuoted ? "quoted" : (r._sourceName || "");
+      var srcSpan = showSource ? "<span class=\"lps-row-source\">" + esc(srcLabel) + "</span>" : "";
+      var trClass = showSource ? " class=\"lps-row-shared\"" : "";
+      return "<tr" + trClass + "><th scope=\"row\">" + esc(r.situation) + srcSpan + "</th>" +
         "<td data-label=\"Under\">" + esc(r.under) + "</td>" +
         "<td data-label=\"Just Right\">" + esc(r.justRight) + "</td>" +
         "<td data-label=\"Over\">" + esc(r.over) + "</td></tr>";
@@ -101,14 +151,24 @@
   }
 
   function boot() {
-    fetch(INDEX).then(function (r) { return r.json(); }).then(function (bank) {
+    Promise.all([
+      fetch(INDEX).then(function (r) { return r.json(); }),
+      fetch(FACETS).then(function (r) { return r.ok ? r.json() : { facets: [] }; }).catch(function () { return { facets: [] }; })
+    ]).then(function (results) {
+      var bank = results[0];
+      var facetsData = results[1];
       var companies = bank.companies || [];
       var def = companies[0] && companies[0].id;
+      var principleMap = {};
+      companies.forEach(function (co) {
+        (co.principles || []).forEach(function (pr) {
+          principleMap[pr.id] = { company: co.id, slug: pr.slug, name: pr.name, facets: pr.facets || [] };
+        });
+      });
       var c = param("c") || def;
       if (!companies.some(function (x) { return x.id === c; })) c = def;
       var p = param("p");
       if (!p) {
-        // fill definitions onto list cards from the index principles if present
         var pending = [];
         companies.forEach(function (co) {
           (co.principles || []).forEach(function (pr) {
@@ -126,10 +186,37 @@
         if (!r.ok) throw new Error("missing record");
         return r.json();
       }).then(function (rec) {
-        var turl = teachUrl(c, p);
-        if (!turl) return renderSingle(bank, c, rec, null);
-        return fetch(turl).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-          .then(function (teach) { renderSingle(bank, c, rec, teach); });
+        var thisPrincipleEntry = principleMap[rec.id] || {};
+        var thisFacets = thisPrincipleEntry.facets || [];
+        var facetMap = {};
+        (facetsData.facets || []).forEach(function (f) { facetMap[f.id] = f; });
+        var neededPids = {};
+        thisFacets.forEach(function (facetId) {
+          var facet = facetMap[facetId];
+          if (!facet) return;
+          (facet.rows || []).forEach(function (ref) {
+            neededPids[String(ref.principle)] = true;
+          });
+        });
+        var recCache = {};
+        recCache[rec.id] = rec;
+        var fetches = Object.keys(neededPids).filter(function (pid) {
+          return !recCache[pid];
+        }).map(function (pid) {
+          var entry = principleMap[pid];
+          if (!entry) return Promise.resolve();
+          return fetch(recUrl(entry.company, entry.slug)).then(function (r) {
+            return r.ok ? r.json() : null;
+          }).then(function (srcRec) {
+            if (srcRec) recCache[pid] = srcRec;
+          }).catch(function () {});
+        });
+        return Promise.all(fetches).then(function () {
+          var turl = teachUrl(c, p);
+          if (!turl) return renderSingle(bank, c, rec, null, facetsData, principleMap, recCache);
+          return fetch(turl).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+            .then(function (teach) { renderSingle(bank, c, rec, teach, facetsData, principleMap, recCache); });
+        });
       }).catch(function () { renderList(bank, c); });
     }).catch(function (err) {
       root.innerHTML = "<p>Could not load the principle sets.</p>";

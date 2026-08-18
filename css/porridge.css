@@ -432,3 +432,12 @@
   color: var(--kld-muted);
   font-size: 0.96rem;
 }
+
+.lps-row-source {
+  display: block;
+  color: var(--kld-muted);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  margin-top: 0.35rem;
+}
