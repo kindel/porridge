@@ -3,7 +3,6 @@
   var INDEX = cfg.principlesIndex || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/index.json";
   var RECORD = cfg.principlesRecord || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/{company}/{slug}.json";
   var FACETS = cfg.facetsJson || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/facets.json";
-  var TEACH = cfg.teaching || "https://cdn.jsdelivr.net/gh/kindel/biq@main/data/lps/{slug}.json";
   var root = document.getElementById("porridge-root");
   if (!root) return;
 
@@ -21,12 +20,6 @@
   }
   function recUrl(company, slug) {
     return RECORD.replace("{company}", company).replace("{slug}", slug);
-  }
-  function teachUrl(company, slug) {
-    // data/lps in kindel/biq is an Amazon-only copy. Asking it for another
-    // company's slug returns Amazon's prose under that company's name.
-    if (company !== "amazon") return "";
-    return TEACH.replace("{slug}", slug);
   }
   function esc(s) {
     return String(s == null ? "" : s)
@@ -72,7 +65,7 @@
     });
   }
 
-  function renderSingle(bank, companyId, slug, rec, teach, facetsData, principleById, companyNames, recCache) {
+  function renderSingle(bank, companyId, slug, rec, facetsData, principleById, companyNames, recCache) {
     var companies = bank.companies || [];
     var def = companies[0] && companies[0].id;
     var co = companies.filter(function (c) { return c.id === companyId; })[0] || companies[0];
@@ -220,10 +213,7 @@
           }).catch(function () {});
         });
         return Promise.all(fetches).then(function () {
-          var turl = teachUrl(c, p);
-          if (!turl) return renderSingle(bank, c, p, rec, null, facetsData, principleById, companyNames, recCache);
-          return fetch(turl).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-            .then(function (teach) { renderSingle(bank, c, p, rec, teach, facetsData, principleById, companyNames, recCache); });
+          renderSingle(bank, c, p, rec, facetsData, principleById, companyNames, recCache);
         });
       }).catch(function () { renderList(bank, c); });
     }).catch(function (err) {

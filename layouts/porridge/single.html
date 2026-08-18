@@ -1,17 +1,11 @@
 {{ define "header" }}
   {{ $slug := .Params.lpId }}
   {{ $company := .Params.company | default "amazon" }}
-  {{ $lp := dict }}
   {{ $principles := slice }}
-  {{ $lpRes := false }}
-  {{ if eq $company "amazon" }}
-    {{ $lpRes = resources.Get (printf "data/lps/%s.json" $slug) }}
-  {{ end }}
-  {{ if not $lpRes }}
-    {{ $lpRes = resources.Get (printf "data/principles/%s/%s.json" $company $slug) }}
-  {{ end }}
+  {{/* Always read name/definition/rows from principles */}}
+  {{ $lpRes := resources.Get (printf "data/principles/%s/%s.json" $company $slug) }}
   {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $company $slug }}{{ end }}
-  {{ $lp = $lpRes | transform.Unmarshal }}
+  {{ $lp := $lpRes | transform.Unmarshal }}
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
   {{ range $pidx.companies }}
     {{ if eq .id $company }}{{ $principles = .principles }}{{ end }}
@@ -31,17 +25,17 @@
 {{ define "main" }}
   {{ $slug := .Params.lpId }}
   {{ $company := .Params.company | default "amazon" }}
-  {{ $lp := dict }}
   {{ $principles := slice }}
-  {{ $lpRes := false }}
-  {{ if eq $company "amazon" }}
-    {{ $lpRes = resources.Get (printf "data/lps/%s.json" $slug) }}
-  {{ end }}
-  {{ if not $lpRes }}
-    {{ $lpRes = resources.Get (printf "data/principles/%s/%s.json" $company $slug) }}
-  {{ end }}
+  {{/* Always read name/definition/rows from principles */}}
+  {{ $lpRes := resources.Get (printf "data/principles/%s/%s.json" $company $slug) }}
   {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $company $slug }}{{ end }}
-  {{ $lp = $lpRes | transform.Unmarshal }}
+  {{ $lp := $lpRes | transform.Unmarshal }}
+  {{/* For Amazon only, load teaching fields from lps */}}
+  {{ $teach := dict }}
+  {{ if eq $company "amazon" }}
+    {{ $teachRes := resources.Get (printf "data/lps/%s.json" $slug) }}
+    {{ if $teachRes }}{{ $teach = $teachRes | transform.Unmarshal }}{{ end }}
+  {{ end }}
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
   {{ range $pidx.companies }}
     {{ if eq .id $company }}{{ $principles = .principles }}{{ end }}
@@ -68,7 +62,7 @@
       </ol>
     </nav>
 
-    {{ with $lp.why }}
+    {{ with $teach.why }}
     <section class="lps-section" aria-labelledby="lps-why-title">
       <p class="kld-section-label">Why it matters</p>
       <h2 id="lps-why-title">What this principle is for.</h2>
@@ -81,7 +75,7 @@
     <section class="lps-section" aria-labelledby="lps-cal-title">
       <p class="kld-section-label">Calibration</p>
       <h2 id="lps-cal-title">Under, just right, over.</h2>
-      {{ with $lp.calibrationIntro }}
+      {{ with $teach.calibrationIntro }}
         <p class="lps-cal-intro">{{ partial "lp-tokens.html" (dict "text" . "principles" $principles "company" $company) }}</p>
       {{ end }}
       {{/* Build lookups: by numeric id and by company:slug */}}
@@ -129,14 +123,8 @@
               {{ $seenKeys = $seenKeys | append $key }}
               {{ $srcEntry := index $principleById $srcPid }}
               {{ if $srcEntry }}
-                {{/* Load the source principle's JSON to get the row */}}
-                {{ $srcRes := false }}
-                {{ if eq $srcEntry.company "amazon" }}
-                  {{ $srcRes = resources.Get (printf "data/lps/%s.json" $srcEntry.slug) }}
-                {{ end }}
-                {{ if not $srcRes }}
-                  {{ $srcRes = resources.Get (printf "data/principles/%s/%s.json" $srcEntry.company $srcEntry.slug) }}
-                {{ end }}
+                {{/* Load the source principle's JSON to get the row (always from principles) */}}
+                {{ $srcRes := resources.Get (printf "data/principles/%s/%s.json" $srcEntry.company $srcEntry.slug) }}
                 {{ if $srcRes }}
                   {{ $srcLp := $srcRes | transform.Unmarshal }}
                   {{ $srcCompanyName := index $companyNames $srcEntry.company }}
@@ -191,7 +179,7 @@
       </div>
     </section>
 
-    {{ with $lp.examples }}
+    {{ with $teach.examples }}
     <section class="lps-section" aria-labelledby="lps-ex-title">
       <p class="kld-section-label">Examples</p>
       <h2 id="lps-ex-title">What it looks like in the work.</h2>
@@ -206,7 +194,7 @@
     </section>
     {{ end }}
 
-    {{ with $lp.looksLike }}
+    {{ with $teach.looksLike }}
     <section class="lps-section" aria-labelledby="lps-looks-title">
       <p class="kld-section-label">In the role</p>
       <h2 id="lps-looks-title">Individual and manager.</h2>
@@ -227,7 +215,7 @@
     </section>
     {{ end }}
 
-    {{ with $lp.deepen }}
+    {{ with $teach.deepen }}
     <section class="lps-section" aria-labelledby="lps-deep-title">
       <p class="kld-section-label">Go deeper</p>
       <h2 id="lps-deep-title">Questions that make the principle concrete.</h2>
@@ -239,7 +227,7 @@
     </section>
     {{ end }}
 
-    {{ with $lp.blog }}
+    {{ with $teach.blog }}
     <section class="lps-section" aria-labelledby="lps-blog-title">
       <p class="kld-section-label">From the blog</p>
       <h2 id="lps-blog-title">Writing that goes deeper.</h2>
@@ -254,7 +242,7 @@
     </section>
     {{ end }}
 
-    {{ with $lp.related }}
+    {{ with $teach.related }}
     <section class="lps-section" aria-labelledby="lps-rel-title">
       <p class="kld-section-label">Related</p>
       <h2 id="lps-rel-title">Principles that sit next to this one.</h2>
