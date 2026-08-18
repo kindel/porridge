@@ -1,0 +1,19 @@
+principles 36de6384c063367b10749082e9d901b9a79fd9c9
+
+added:
+  dawn/_index.md
+  dawn/think-big-start-small.md
+  dawn/customer-success-is-our-success.md
+  dawn/break-down-silos.md
+  dawn/ownership.md
+  dawn/no-surprises.md
+  dawn/invent-and-simplify.md
+  dawn/bias-for-action.md
+  dawn/earn-trust.md
+  dawn/better-than-yesterday.md
+  dawn/hire-and-develop-the-best.md
+  dawn/have-backbone-disagree-and-commit.md
+  dawn/respect-time.md
+  dawn/scrappy-not-crappy.md
+  dawn/rocket-engineering-not-rocket-science.md
+  dawn/race-on-the-racetrack-walk-on-ice.md

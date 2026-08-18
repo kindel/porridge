@@ -40,15 +40,15 @@ def company_index_text(name: str) -> str:
     return f"---\ntitle: {name}\nbuild:\n  render: never\n  list: never\n---\n"
 
 
-def page_text(company: str, pid: str, name: str) -> str:
+def page_text(company: str, slug: str, name: str) -> str:
     lines = ["---"]
     if company == "amazon":
         lines.append("aliases:")
-        lines.append(f"  - /lps/{pid}/")
-        lines.append(f"  - /porridge/{pid}/")
+        lines.append(f"  - /lps/{slug}/")
+        lines.append(f"  - /porridge/{slug}/")
     lines.append(f"title: {name}")
     lines.append(f"description: Under, just right, and over for {name}.")
-    lines.append(f"lpId: {pid}")
+    lines.append(f"lpId: {slug}")
     lines.append(f"company: {company}")
     lines.append("---")
     return "\n".join(lines) + "\n"
@@ -67,12 +67,13 @@ def main() -> int:
             index_path.write_text(company_index_text(company["name"]))
             added.append(f"{cid}/_index.md")
         for p in company.get("principles", []):
-            pid, name = p["id"], p["name"]
-            path = cdir / f"{pid}.md"
+            slug = p.get("slug") or str(p["id"])
+            name = p["name"]
+            path = cdir / f"{slug}.md"
             if path.exists():
                 continue
-            path.write_text(page_text(cid, pid, name))
-            added.append(f"{cid}/{pid}.md")
+            path.write_text(page_text(cid, slug, name))
+            added.append(f"{cid}/{slug}.md")
 
     lines = [f"principles {sha}", ""]
     if not added:
