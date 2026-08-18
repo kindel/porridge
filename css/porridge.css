@@ -76,13 +76,13 @@
 }
 
 .lps-card h3 a {
-  color: var(--kld-ink);
-  text-decoration: none;
+  color: var(--kld-blue);
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
 }
 
 .lps-card h3 a:hover {
   color: var(--kld-rust);
-  text-decoration: underline;
 }
 
 .lps-card p {
@@ -107,15 +107,15 @@
 }
 
 .lps-jump a {
-  color: var(--kld-muted);
+  color: var(--kld-blue);
   font-size: 0.88rem;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
 }
 
 .lps-jump a:hover,
 .lps-jump .is-current a {
-  color: var(--kld-ink);
-  text-decoration: underline;
+  color: var(--kld-rust);
 }
 
 .lps-jump .is-current a {
@@ -124,11 +124,14 @@
 
 .kld-subhero .kld-eyebrow a {
   color: inherit;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
 }
 
-.kld-subhero .kld-eyebrow a:hover {
+.kld-subhero-inner p a {
+  color: inherit;
   text-decoration: underline;
+  text-underline-offset: 0.12em;
 }
 
 .lps-table-wrap {
@@ -226,14 +229,14 @@
 }
 
 .lps-related a {
-  color: var(--kld-ink);
+  color: var(--kld-blue);
   font-weight: 700;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
 }
 
 .lps-related a:hover {
   color: var(--kld-rust);
-  text-decoration: underline;
 }
 
 .lps-related p {
@@ -254,13 +257,13 @@
 }
 
 .lps-pager a {
-  color: var(--kld-ink);
-  text-decoration: none;
+  color: var(--kld-blue);
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
 }
 
 .lps-pager a:hover {
   color: var(--kld-rust);
-  text-decoration: underline;
 }
 
 .lps-pager span {
@@ -362,14 +365,14 @@
 }
 
 .lps-blog a {
-  color: var(--kld-ink);
+  color: var(--kld-blue);
   font-weight: 700;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
 }
 
 .lps-blog a:hover {
   color: var(--kld-rust);
-  text-decoration: underline;
 }
 
 .lps-blog p {
@@ -416,4 +419,10 @@
 
 .lps-standalone-header { max-width: 46rem; margin: 2rem auto 0; padding: 0 1.25rem; }
 .lps-standalone-header h1 { margin: 0 0 0.5rem; }
+.lps-standalone-header a {
+  color: var(--kld-blue);
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+.lps-standalone-header a:hover { color: var(--kld-rust); }
 #porridge-root { max-width: 46rem; margin: 0 auto 4rem; padding: 0 1.25rem; }
