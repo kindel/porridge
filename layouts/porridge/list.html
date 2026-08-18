@@ -1,6 +1,4 @@
 {{ define "header" }}
-  {{ $idxRes := resources.Get "data/lps/index.json" }}
-  {{ if not $idxRes }}{{ errorf "missing data/lps/index.json; bump kindel/biq and mount data to assets/data" }}{{ end }}
   {{ $pidxRes := resources.Get "data/principles/index.json" }}
   {{ if not $pidxRes }}{{ errorf "missing data/principles/index.json; bump kindel/principles and mount data to assets/data/principles" }}{{ end }}
   <header class="kld-subhero" style="background-image: linear-gradient(90deg, rgba(17, 24, 39, 0.94) 0%, rgba(17, 24, 39, 0.78) 46%, rgba(17, 24, 39, 0.25) 100%), url('/images/porridge-hero.jpg');">
@@ -13,10 +11,13 @@
 {{ end }}
 
 {{ define "main" }}
-  {{ $idx := resources.Get "data/lps/index.json" | transform.Unmarshal }}
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
   {{ $default := "" }}
   {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
+  {{/* lps index is Amazon-only and optional; used only for blog links */}}
+  {{ $lpsIdxRes := resources.Get "data/lps/index.json" }}
+  {{ $lpsIdx := dict }}
+  {{ if $lpsIdxRes }}{{ $lpsIdx = $lpsIdxRes | transform.Unmarshal }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
   <article class="kld-topics-page lps-page">
     <section class="lps-intro" aria-labelledby="lps-how-title">
@@ -39,13 +40,7 @@
         <h2 id="{{ printf "lps-list-%s" $co.id }}">{{ $co.set }}, in teaching order.</h2>
         <ol class="lps-card-list">
           {{ range $co.principles }}
-            {{ $lpRes := false }}
-            {{ if eq $co.id "amazon" }}
-              {{ $lpRes = resources.Get (printf "data/lps/%s.json" .slug) }}
-            {{ end }}
-            {{ if not $lpRes }}
-              {{ $lpRes = resources.Get (printf "data/principles/%s/%s.json" $co.id .slug) }}
-            {{ end }}
+            {{ $lpRes := resources.Get (printf "data/principles/%s/%s.json" $co.id .slug) }}
             {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $co.id .slug }}{{ end }}
             {{ $lp := $lpRes | transform.Unmarshal }}
             <li>
@@ -62,12 +57,13 @@
         </ol>
       </section>
     {{ end }}
-    {{ with $idx.blog }}
-    <section class="lps-section" data-company-set="{{ $default }}" aria-labelledby="lps-blog-title">
+    {{/* Blog links from lps index are Amazon-only */}}
+    {{ if and (eq $default "amazon") $lpsIdx.blog }}
+    <section class="lps-section" data-company-set="amazon" aria-labelledby="lps-blog-title">
       <p class="kld-section-label">From the blog</p>
       <h2 id="lps-blog-title">Writing that goes with the set.</h2>
       <ul class="lps-blog">
-        {{ range . }}
+        {{ range $lpsIdx.blog }}
           <li>
             <a href="{{ .url }}">{{ .title }}</a>
             {{ with .note }}<p>{{ . }}</p>{{ end }}
