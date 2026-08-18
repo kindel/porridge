@@ -426,3 +426,9 @@
 }
 .lps-standalone-header a:hover { color: var(--kld-rust); }
 #porridge-root { max-width: 46rem; margin: 0 auto 4rem; padding: 0 1.25rem; }
+
+.lps-add-note {
+  margin-top: 2.5rem;
+  color: var(--kld-muted);
+  font-size: 0.96rem;
+}

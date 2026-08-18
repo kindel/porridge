@@ -29,7 +29,6 @@
           <option value="{{ .id }}">{{ .name }}</option>
         {{ end }}
       </select>
-      <p>To add another company's set, <a href="https://github.com/kindel/principles/issues/new">open an issue on kindel/principles</a>.</p>
     </section>
     {{ range $pidx.companies }}
       {{ $co := . }}
@@ -77,6 +76,7 @@
       </ul>
     </section>
     {{ end }}
+    <p class="lps-add-note">To add another company's set, <a href="https://github.com/kindel/principles/issues/new">open an issue on kindel/principles</a>.</p>
   </article>
   <script src="{{ "js/porridge.js" | relURL }}"></script>
 {{ end }}

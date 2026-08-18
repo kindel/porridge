@@ -58,12 +58,12 @@
       "<p>A great way to be thoughtful about this is to apply a Just Right, Over, Under taxonomy. Pick the row that matches what happened.</p>" +
       "<label class=\"lps-company-label\" for=\"lps-company\">Company</label>" +
       "<select id=\"lps-company\" class=\"lps-select\">" + opts + "</select>" +
-      "<p>To add another company's set, <a href=\"https://github.com/kindel/principles/issues/new\">open an issue on kindel/principles</a>.</p>" +
       "</section>" +
       "<section class=\"lps-index\">" +
       "<p class=\"kld-section-label\">The set</p>" +
       "<h2>" + esc(co.set) + ", in teaching order.</h2>" +
-      "<ol class=\"lps-card-list\">" + cards + "</ol></section>";
+      "<ol class=\"lps-card-list\">" + cards + "</ol></section>" +
+      "<p class=\"lps-add-note\">To add another company's set, <a href=\"https://github.com/kindel/principles/issues/new\">open an issue on kindel/principles</a>.</p>";
     document.getElementById("lps-company").addEventListener("change", function () {
       var id = this.value;
       setParams({ c: id === def ? "" : id, p: "" });
