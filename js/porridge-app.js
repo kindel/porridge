@@ -125,12 +125,9 @@
       mergedRows.push(r);
     });
     var rows = mergedRows.map(function (r) {
-      var isShared = r._sourceCompany && r._sourceCompany !== companyId;
       var isQuoted = r.words === "quoted";
-      var showSource = isShared || isQuoted;
-      var srcLabel = isQuoted ? "quoted" : (r._sourceCompanyName || "");
-      var srcSpan = showSource ? "<span class=\"lps-row-source\">" + esc(srcLabel) + "</span>" : "";
-      var trClass = showSource ? " class=\"lps-row-shared\"" : "";
+      var srcSpan = isQuoted ? "<span class=\"lps-row-source\">quoted</span>" : "";
+      var trClass = isQuoted ? " class=\"lps-row-shared\"" : "";
       return "<tr" + trClass + "><th scope=\"row\">" + esc(r.situation) + srcSpan + "</th>" +
         "<td data-label=\"Under\">" + esc(r.under) + "</td>" +
         "<td data-label=\"Just Right\">" + esc(r.justRight) + "</td>" +
