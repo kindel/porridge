@@ -1,6 +1,7 @@
 {
   "id": "porridge",
   "name": "Porridge",
+  "subtitle": "Behaviors - Just Right, Over, and Under",
   "href": "/porridge/",
   "status": "beta",
   "order": 40,
