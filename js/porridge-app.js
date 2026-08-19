@@ -30,6 +30,24 @@
     return g.replace(/-/g, " ");
   }
 
+  // Expand {lp:<slug>} tokens against the principle list of the company that
+  // owns the text, mirroring layouts/partials/lp-tokens.html. companyId is
+  // the owning company, companyPrinciples its principle list, and def the
+  // default company (whose links omit ?c=). Escapes the text, so the return
+  // value is HTML.
+  function expandTokens(text, companyId, companyPrinciples, def) {
+    return esc(text).replace(/\{lp:([a-z0-9-]+)\}/g, function (token, slug) {
+      var match = null;
+      (companyPrinciples || []).forEach(function (p) {
+        if (p.slug === slug) match = p;
+      });
+      if (!match) return token;
+      var q = "?p=" + encodeURIComponent(slug) +
+        (companyId === def ? "" : "&c=" + encodeURIComponent(companyId));
+      return "<a href=\"" + q + "\">" + esc(match.name) + "</a>";
+    });
+  }
+
   function renderList(bank, companyId) {
     var companies = bank.companies || [];
     var def = companies[0] && companies[0].id;
@@ -117,14 +135,20 @@
       seenKeys[key] = true;
       mergedRows.push(r);
     });
+    var principlesByCompany = {};
+    companies.forEach(function (c) { principlesByCompany[c.id] = c.principles || []; });
     var rows = mergedRows.map(function (r) {
       var isQuoted = r.words === "quoted";
       var srcSpan = isQuoted ? "<span class=\"lps-row-source\">quoted</span>" : "";
       var trClass = isQuoted ? " class=\"lps-row-shared\"" : "";
+      // A row pulled in via the facet map keeps its own company's tokens:
+      // {lp:<slug>} names a principle of the company that wrote the row.
+      var rowCompany = r._sourceCompany || companyId;
+      var rowPrinciples = principlesByCompany[rowCompany] || [];
       return "<tr" + trClass + "><th scope=\"row\">" + esc(r.situation) + srcSpan + "</th>" +
-        "<td data-label=\"Under\">" + esc(r.under) + "</td>" +
-        "<td data-label=\"Just Right\">" + esc(r.justRight) + "</td>" +
-        "<td data-label=\"Over\">" + esc(r.over) + "</td></tr>";
+        "<td data-label=\"Under\">" + expandTokens(r.under, rowCompany, rowPrinciples, def) + "</td>" +
+        "<td data-label=\"Just Right\">" + expandTokens(r.justRight, rowCompany, rowPrinciples, def) + "</td>" +
+        "<td data-label=\"Over\">" + expandTokens(r.over, rowCompany, rowPrinciples, def) + "</td></tr>";
     }).join("");
     var jump = (co.principles || []).map(function (p) {
       var q = "?p=" + encodeURIComponent(p.slug) + (companyId === def ? "" : "&c=" + encodeURIComponent(companyId));
@@ -135,7 +159,7 @@
     root.innerHTML =
       "<p class=\"kld-eyebrow\"><a href=\"" + (listQ || "?") + "\">Porridge</a>" + eyebrow + "</p>" +
       "<h1>" + esc(rec.name) + "</h1>" +
-      "<p>" + esc(rec.definition || "") + "</p>" +
+      "<p>" + expandTokens(rec.definition || "", companyId, co.principles || [], def) + "</p>" +
       "<nav class=\"lps-jump\" aria-label=\"All principles\"><ol>" + jump + "</ol></nav>" +
       "<section class=\"lps-section\"><p class=\"kld-section-label\">Calibration</p>" +
       "<h2>Under, just right, over.</h2>" +
@@ -164,7 +188,10 @@
       var c = param("c") || def;
       if (!companies.some(function (x) { return x.id === c; })) c = def;
       var p = param("p");
-      if (!p) {
+      // The index carries no definitions, so backfill them from the records
+      // before any list render, including the fallback after a failed
+      // single-page load: a stale ?p= must not produce blank cards.
+      function showList(companyId) {
         var pending = [];
         companies.forEach(function (co) {
           (co.principles || []).forEach(function (pr) {
@@ -176,7 +203,10 @@
             }).catch(function () {}));
           });
         });
-        return Promise.all(pending).then(function () { renderList(bank, c); });
+        return Promise.all(pending).then(function () { renderList(bank, companyId); });
+      }
+      if (!p) {
+        return showList(c);
       }
       var co = companies.filter(function (x) { return x.id === c; })[0] || companies[0];
       var thisPrincipleEntry = null;
@@ -215,7 +245,7 @@
         return Promise.all(fetches).then(function () {
           renderSingle(bank, c, p, rec, facetsData, principleById, companyNames, recCache);
         });
-      }).catch(function () { renderList(bank, c); });
+      }).catch(function () { return showList(c); });
     }).catch(function (err) {
       root.innerHTML = "<p>Could not load the principle sets.</p>";
       console.error(err);

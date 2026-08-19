@@ -82,9 +82,11 @@
       {{ $principleById := dict }}
       {{ $principleByKey := dict }}
       {{ $companyNames := dict }}
+      {{ $principlesByCompany := dict }}
       {{ range $pidx.companies }}
         {{ $co := .id }}
         {{ $companyNames = merge $companyNames (dict $co .name) }}
+        {{ $principlesByCompany = merge $principlesByCompany (dict $co .principles) }}
         {{ range .principles }}
           {{ $entry := dict "id" .id "company" $co "slug" .slug "name" .name "facets" .facets }}
           {{ $principleById = merge $principleById (dict (string .id) $entry) }}
@@ -162,6 +164,12 @@
           <tbody>
             {{ range $mergedRows }}
               {{ $isQuoted := eq .words "quoted" }}
+              {{/* A row pulled in via the facet map keeps its own company's
+                   tokens: {lp:<slug>} names a principle of the company that
+                   wrote the row, so it must expand against that company's
+                   list, not the viewing company's. */}}
+              {{ $rowCompany := ._sourceCompany | default $company }}
+              {{ $rowPrinciples := index $principlesByCompany $rowCompany | default $principles }}
               <tr{{ if $isQuoted }} class="lps-row-shared"{{ end }}>
                 <th scope="row">
                   {{ .situation }}
@@ -169,9 +177,9 @@
                     <span class="lps-row-source">quoted</span>
                   {{ end }}
                 </th>
-                <td data-label="Under">{{ partial "lp-tokens.html" (dict "text" .under "principles" $principles "company" $company) }}</td>
-                <td data-label="Just Right">{{ partial "lp-tokens.html" (dict "text" .justRight "principles" $principles "company" $company) }}</td>
-                <td data-label="Over">{{ partial "lp-tokens.html" (dict "text" .over "principles" $principles "company" $company) }}</td>
+                <td data-label="Under">{{ partial "lp-tokens.html" (dict "text" .under "principles" $rowPrinciples "company" $rowCompany) }}</td>
+                <td data-label="Just Right">{{ partial "lp-tokens.html" (dict "text" .justRight "principles" $rowPrinciples "company" $rowCompany) }}</td>
+                <td data-label="Over">{{ partial "lp-tokens.html" (dict "text" .over "principles" $rowPrinciples "company" $rowCompany) }}</td>
               </tr>
             {{ end }}
           </tbody>
