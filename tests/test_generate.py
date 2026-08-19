@@ -8,8 +8,8 @@ import unittest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "scripts"))
 
-from generate import (classify_facet, parse_rows, row_words, stamp,
-                      style_examples)
+from generate import (classify_facet, needs_generation, parse_rows, row_words,
+                      split_facet_rows, stamp, style_examples)
 
 
 def rec(pid, company, rows):
@@ -73,6 +73,23 @@ class ClassifyTest(unittest.TestCase):
             generated(),
         ]}
         self.assertEqual("human", classify_facet(facet, records))
+        human, gen = split_facet_rows(facet, records)
+        self.assertEqual(1, len(human))
+        self.assertEqual(1, len(gen))
+        self.assertTrue(needs_generation(facet, records))
+
+    def test_a_facet_with_eight_generated_rows_is_skipped(self):
+        rows = [generated(str(i)) for i in range(8)]
+        for i, r in enumerate(rows):
+            r["id"] = "gen-%d" % i
+        facet = {"id": "full", "rows": rows}
+        self.assertFalse(needs_generation(facet, {}))
+
+    def test_a_human_source_facet_still_needs_generated_rows(self):
+        records = {1002: rec(1002, "amazon", [authored()])}
+        facet = {"id": "acts-like-an-owner",
+                 "rows": [{"principle": 1002, "id": "row-a"}]}
+        self.assertTrue(needs_generation(facet, records))
 
 
 class StyleExamplesTest(unittest.TestCase):

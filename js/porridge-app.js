@@ -88,7 +88,7 @@
     });
   }
 
-  function renderSingle(bank, companyId, slug, rec, teach, facetsData, principleById, companyNames, recCache) {
+  function renderSingle(bank, companyId, slug, rec, teach, facetsData) {
     var companies = bank.companies || [];
     var def = companies[0] && companies[0].id;
     var co = companies.filter(function (c) { return c.id === companyId; })[0] || companies[0];
@@ -97,7 +97,6 @@
     (co.principles || []).forEach(function (p) {
       if (p.slug === slug) thisPrincipleEntry = p;
     });
-    var thisNumericId = thisPrincipleEntry ? thisPrincipleEntry.id : 0;
     var thisFacets = (thisPrincipleEntry && thisPrincipleEntry.facets) || [];
     var facetMap = {};
     (facetsData.facets || []).forEach(function (f) { facetMap[f.id] = f; });
@@ -107,71 +106,19 @@
       var facet = facetMap[facetId];
       if (!facet) return;
       (facet.rows || []).forEach(function (ref) {
-        if (ref.under && ref.principle == null) {
-          var gkey = "generated:" + facetId + ":" + ref.id;
-          if (seenKeys[gkey]) return;
-          seenKeys[gkey] = true;
-          mergedRows.push({
-            id: ref.id,
-            situation: ref.situation,
-            under: ref.under,
-            justRight: ref.justRight,
-            over: ref.over,
-            words: ref.words || "generated"
-          });
-          return;
-        }
-        var srcPid = String(ref.principle);
-        var rowId = ref.id;
-        var key = srcPid + ":" + rowId;
-        if (seenKeys[key]) return;
-        seenKeys[key] = true;
-        var srcEntry = principleById[srcPid];
-        if (!srcEntry) return;
-        var srcRec = recCache[srcPid];
-        if (!srcRec) return;
-        (srcRec.rows || []).forEach(function (r) {
-          if (r.id === rowId) {
-            mergedRows.push({
-              id: r.id,
-              situation: r.situation,
-              under: r.under,
-              justRight: r.justRight,
-              over: r.over,
-              words: r.words,
-              _sourceCompany: srcEntry.company,
-              _sourceCompanyName: companyNames[srcEntry.company] || srcEntry.company,
-              _sourcePid: srcPid
-            });
-          }
-        });
+        if (!(ref.under && ref.principle == null)) return;
+        var gkey = "generated:" + facetId + ":" + ref.id;
+        if (seenKeys[gkey]) return;
+        seenKeys[gkey] = true;
+        mergedRows.push(ref);
       });
     });
-    var localPid = String(thisNumericId);
-    (rec.rows || []).forEach(function (r) {
-      var key = localPid + ":" + r.id;
-      if (seenKeys[key]) return;
-      seenKeys[key] = true;
-      mergedRows.push(r);
-    });
     var principles = co.principles || [];
-    var principlesByCompany = {};
-    companies.forEach(function (c) { principlesByCompany[c.id] = c.principles || []; });
     var rows = mergedRows.map(function (r) {
-      var isQuoted = r.words === "quoted";
-      var isGenerated = r.words === "generated";
-      var srcSpan = isQuoted ? "<span class=\"lps-row-source\">quoted</span>"
-        : (isGenerated ? "<span class=\"lps-row-source\">generated</span>" : "");
-      var trClass = (isQuoted || isGenerated) ? " class=\"lps-row-shared\"" : "";
-      // A row pulled in via the facet map keeps its own company's tokens:
-      // {lp:<slug>} names a principle of the company that wrote the row, so
-      // it must expand against that company's list, not the viewing one's.
-      var rowCompany = r._sourceCompany || companyId;
-      var rowPrinciples = principlesByCompany[rowCompany] || [];
-      return "<tr" + trClass + "><th scope=\"row\">" + esc(r.situation) + srcSpan + "</th>" +
-        "<td data-label=\"Under\">" + expandLp(r.under, rowPrinciples, rowCompany) + "</td>" +
-        "<td data-label=\"Just Right\">" + expandLp(r.justRight, rowPrinciples, rowCompany) + "</td>" +
-        "<td data-label=\"Over\">" + expandLp(r.over, rowPrinciples, rowCompany) + "</td></tr>";
+      return "<tr><th scope=\"row\">" + esc(r.situation) + "</th>" +
+        "<td data-label=\"Under\">" + expandLp(r.under, principles, companyId) + "</td>" +
+        "<td data-label=\"Just Right\">" + expandLp(r.justRight, principles, companyId) + "</td>" +
+        "<td data-label=\"Over\">" + expandLp(r.over, principles, companyId) + "</td></tr>";
     }).join("");
     var jump = principles.map(function (p) {
       var q = "?p=" + encodeURIComponent(p.slug) + (companyId === def ? "" : "&c=" + encodeURIComponent(companyId));
@@ -280,14 +227,6 @@
       var facetsData = results[1];
       var companies = bank.companies || [];
       var def = companies[0] && companies[0].id;
-      var principleById = {};
-      var companyNames = {};
-      companies.forEach(function (co) {
-        companyNames[co.id] = co.name;
-        (co.principles || []).forEach(function (pr) {
-          principleById[pr.id] = { company: co.id, slug: pr.slug, name: pr.name, facets: pr.facets || [] };
-        });
-      });
       var c = param("c") || def;
       if (!companies.some(function (x) { return x.id === c; })) c = def;
       var p = param("p");
@@ -311,46 +250,14 @@
       if (!p) {
         return showList(c);
       }
-      var co = companies.filter(function (x) { return x.id === c; })[0] || companies[0];
-      var thisPrincipleEntry = null;
-      (co.principles || []).forEach(function (pr) {
-        if (pr.slug === p) thisPrincipleEntry = pr;
-      });
-      var thisNumericId = thisPrincipleEntry ? thisPrincipleEntry.id : 0;
-      var thisFacets = (thisPrincipleEntry && thisPrincipleEntry.facets) || [];
-      var facetMap = {};
-      (facetsData.facets || []).forEach(function (f) { facetMap[f.id] = f; });
-      var neededPids = {};
-      thisFacets.forEach(function (facetId) {
-        var facet = facetMap[facetId];
-        if (!facet) return;
-        (facet.rows || []).forEach(function (ref) {
-          neededPids[String(ref.principle)] = true;
-        });
-      });
       return fetch(recUrl(c, p)).then(function (r) {
         if (!r.ok) throw new Error("missing record");
         return r.json();
       }).then(function (rec) {
-        var recCache = {};
-        recCache[thisNumericId] = rec;
-        var fetches = Object.keys(neededPids).filter(function (pid) {
-          return !recCache[pid];
-        }).map(function (pid) {
-          var entry = principleById[pid];
-          if (!entry) return Promise.resolve();
-          return fetch(recUrl(entry.company, entry.slug)).then(function (r) {
-            return r.ok ? r.json() : null;
-          }).then(function (srcRec) {
-            if (srcRec) recCache[pid] = srcRec;
-          }).catch(function () {});
-        });
-        return Promise.all(fetches).then(function () {
-          var turl = teachUrl(c, p);
-          if (!turl) return renderSingle(bank, c, p, rec, null, facetsData, principleById, companyNames, recCache);
-          return fetch(turl).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-            .then(function (teach) { renderSingle(bank, c, p, rec, teach, facetsData, principleById, companyNames, recCache); });
-        });
+        var turl = teachUrl(c, p);
+        if (!turl) return renderSingle(bank, c, p, rec, null, facetsData);
+        return fetch(turl).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+          .then(function (teach) { renderSingle(bank, c, p, rec, teach, facetsData); });
       }).catch(function () { return showList(c); });
     }).catch(function (err) {
       root.innerHTML = "<p>Could not load the principle sets.</p>";
