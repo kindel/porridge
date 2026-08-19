@@ -5,5 +5,9 @@
   "status": "beta",
   "order": 40,
   "icon": "icon.png",
-  "summary": "An interactive tool that walks a principle as Just Right, Over, or Under. You leave knowing how you, or someone you work with, are living it, and which way it missed. Useful when you are studying how to get better at living a principle, or coaching someone else to do the same."
+  "summary": "An interactive tool that walks a principle as Just Right, Over, or Under. You leave knowing how you, or someone you work with, are living it, and which way it missed. Useful when you are studying how to get better at living a principle, or coaching someone else to do the same.",
+  "posts": [
+    { "title": "Just Right Porridge and Leadership Principles", "href": "https://blog.kindel.com/2019/03/21/just-right-porridge-and-leadership-principles/" },
+    { "title": "The Tension is Intentional", "href": "https://blog.kindel.com/2019/05/16/the-tension-is-intentional/" }
+  ]
 }
