@@ -80,6 +80,33 @@ def classify_facet(facet, records_by_pid):
     return "human"
 
 
+def split_facet_rows(facet, records_by_pid):
+    """Keep human refs intact; generated inline rows are the replaceable set."""
+    human = []
+    generated = []
+    for r in facet.get("rows") or []:
+        if row_words(r, records_by_pid) == "generated":
+            generated.append(r)
+        else:
+            human.append(r)
+    return human, generated
+
+
+def needs_generation(facet, records_by_pid, all_mode):
+    """Whether this facet should spend an API call.
+
+    empty mode: only facets with no human rows, and fewer than N_ROWS generated.
+    all mode: every facet that still has fewer than N_ROWS generated, including
+    those that already have quoted or authored refs. Human refs stay.
+    """
+    human, generated = split_facet_rows(facet, records_by_pid)
+    if len(generated) >= N_ROWS:
+        return False
+    if all_mode:
+        return True
+    return not human
+
+
 def style_examples(records_by_pid, n_amazon=4, n_dawn=2):
     """Amazon authored and Dawn quoted, loaded at run time, never generated."""
     amazon = []
@@ -187,9 +214,9 @@ def row_ok(row, seen):
     return True
 
 
-def stamp(rows):
+def stamp(rows, reserved=None):
     out = []
-    seen = set()
+    seen = set(reserved or ())
     for r in rows:
         if not isinstance(r, dict) or not row_ok(r, seen):
             continue
@@ -211,7 +238,7 @@ def system_prompt():
     return open(PROMPT, encoding="utf-8").read().strip()
 
 
-def user_prompt(facet, records_by_pid, examples):
+def user_prompt(facet, records_by_pid, examples, reserved_ids=None):
     mapped = []
     for pid in facet.get("principles") or []:
         rec = records_by_pid.get(pid) or {}
@@ -221,25 +248,32 @@ def user_prompt(facet, records_by_pid, examples):
             "name": rec.get("name"),
             "definition": rec.get("definition"),
         })
-    return "\n".join([
+    parts = [
         "Facet: %s (%s)" % (facet.get("label"), facet.get("id")),
         "Principles this facet maps to:",
         json.dumps(mapped, indent=2),
         "",
-        "Human style examples (do not copy, do not generate onto these facets):",
+        "Human style examples (do not copy):",
         json.dumps(examples, indent=2),
         "",
         "Write %d new rows for this facet." % N_ROWS,
-    ])
+    ]
+    if reserved_ids:
+        parts.extend([
+            "",
+            "Do not reuse these existing row ids:",
+            json.dumps(sorted(reserved_ids)),
+        ])
+    return "\n".join(parts)
 
 
-def call(facet, records_by_pid, examples, api_key):
+def call(facet, records_by_pid, examples, api_key, reserved_ids=None):
     payload = json.dumps({
         "model": MODEL,
         "temperature": 0.6,
         "messages": [
             {"role": "system", "content": system_prompt()},
-            {"role": "user", "content": user_prompt(facet, records_by_pid, examples)},
+            {"role": "user", "content": user_prompt(facet, records_by_pid, examples, reserved_ids)},
         ],
     }).encode()
     last_err = None
@@ -257,7 +291,7 @@ def call(facet, records_by_pid, examples, api_key):
             with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
                 raw = json.loads(resp.read().decode())
             text = (((raw.get("choices") or [{}])[0].get("message") or {}).get("content")) or ""
-            rows = stamp(parse_rows(text) or [])
+            rows = stamp(parse_rows(text) or [], reserved=reserved_ids)
             if len(rows) < 5:
                 raise ValueError("too few valid rows: %d" % len(rows))
             return rows
@@ -279,6 +313,7 @@ def main():
     api_key = os.environ.get("XAI_API_KEY") or ""
     want_facet = (os.environ.get("PORRIDGE_FACET") or "").strip()
     principles_root = (os.environ.get("PRINCIPLES_ROOT") or "").strip()
+    all_mode = (os.environ.get("PORRIDGE_ALL") or "").strip().lower() in TRUTHY + ("all",)
 
     if principles_root:
         _index, facets, records = load_from_root(principles_root)
@@ -286,22 +321,18 @@ def main():
         _index, facets, records = load_from_urls()
 
     pending = []
-    human = 0
-    already = 0
+    skipped = 0
     for f in facets.get("facets") or []:
         if want_facet and f.get("id") != want_facet:
             continue
-        kind = classify_facet(f, records)
-        if kind == "human":
-            human += 1
-        elif kind == "generated":
-            already += 1
-        else:
+        if needs_generation(f, records, all_mode):
             pending.append(f)
+        else:
+            skipped += 1
 
     print(
-        "facets=%d human=%d generated=%d pending=%d"
-        % (human + already + len(pending), human, already, len(pending)),
+        "facets=%d skipped=%d pending=%d all=%s"
+        % (skipped + len(pending), skipped, len(pending), "yes" if all_mode else "no"),
         flush=True,
     )
     for f in pending:
@@ -325,15 +356,23 @@ def main():
     examples = style_examples(records)
     ok = 0
     fail = []
+    reserved_by_id = {}
+    for f in pending:
+        human, _gen = split_facet_rows(f, records)
+        reserved_by_id[id(f)] = set(r.get("id") for r in human if r.get("id"))
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
-        futs = {ex.submit(call, f, records, examples, api_key): f for f in pending}
+        futs = {
+            ex.submit(call, f, records, examples, api_key, reserved_by_id[id(f)]): f
+            for f in pending
+        }
         for fut in as_completed(futs):
             f = futs[fut]
             try:
                 rows = fut.result()
-                f["rows"] = rows
+                human, _old = split_facet_rows(f, records)
+                f["rows"] = human + rows
                 ok += 1
-                print("ok %s rows=%d" % (f.get("id"), len(rows)), flush=True)
+                print("ok %s generated=%d kept_human=%d" % (f.get("id"), len(rows), len(human)), flush=True)
             except Exception as e:
                 fail.append({"facet": f.get("id"), "error": str(e)})
                 print("fail %s %s" % (f.get("id"), e), flush=True)

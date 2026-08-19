@@ -12,9 +12,17 @@ on:
         default: true
         type: boolean
       facet:
-        description: Facet id to generate, or empty for every empty facet
+        description: Facet id to generate, or empty for every matching facet
         required: false
         type: string
+      scope:
+        description: empty = only facets with no human rows; all = every facet, appending generated rows and keeping quoted/authored refs
+        required: true
+        default: empty
+        type: choice
+        options:
+          - empty
+          - all
 
 permissions:
   contents: write
@@ -23,7 +31,7 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,6 +51,7 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           PORRIDGE_DRY_RUN: ${{ inputs.dry_run }}
           PORRIDGE_FACET: ${{ inputs.facet }}
+          PORRIDGE_ALL: ${{ inputs.scope }}
           PRINCIPLES_ROOT: ${{ github.workspace }}/principles
         shell: bash
         working-directory: porridge
@@ -65,6 +74,14 @@ jobs:
             tail -n 20 porridge/run.log 2>/dev/null || echo "no output"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload facets.json
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: facets
+          path: principles/data/facets.json
+          if-no-files-found: ignore
 
       - name: Open a pull request on kindel/principles
         if: ${{ !inputs.dry_run }}

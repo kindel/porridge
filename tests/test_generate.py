@@ -8,8 +8,8 @@ import unittest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "scripts"))
 
-from generate import (classify_facet, parse_rows, row_words, stamp,
-                      style_examples)
+from generate import (classify_facet, needs_generation, parse_rows, row_words,
+                      split_facet_rows, stamp, style_examples)
 
 
 def rec(pid, company, rows):
@@ -73,6 +73,25 @@ class ClassifyTest(unittest.TestCase):
             generated(),
         ]}
         self.assertEqual("human", classify_facet(facet, records))
+        human, gen = split_facet_rows(facet, records)
+        self.assertEqual(1, len(human))
+        self.assertEqual(1, len(gen))
+        self.assertFalse(needs_generation(facet, records, all_mode=False))
+        self.assertTrue(needs_generation(facet, records, all_mode=True))
+
+    def test_all_mode_skips_a_facet_that_already_has_eight_generated(self):
+        rows = [generated(str(i)) for i in range(8)]
+        for i, r in enumerate(rows):
+            r["id"] = "gen-%d" % i
+        facet = {"id": "full", "rows": rows}
+        self.assertFalse(needs_generation(facet, {}, all_mode=True))
+
+    def test_empty_mode_skips_human_facets(self):
+        records = {1002: rec(1002, "amazon", [authored()])}
+        facet = {"id": "acts-like-an-owner",
+                 "rows": [{"principle": 1002, "id": "row-a"}]}
+        self.assertFalse(needs_generation(facet, records, all_mode=False))
+        self.assertTrue(needs_generation(facet, records, all_mode=True))
 
 
 class StyleExamplesTest(unittest.TestCase):

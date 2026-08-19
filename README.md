@@ -57,16 +57,17 @@ because they are model-written calibration and a human should read them first.
 The key lives in the `XAI_API_KEY` repository secret. Opening the principles
 PR uses `CASCADE_TOKEN`. There is no reason to hold either locally.
 
-Resume-safe. It writes onto a facet only when that facet has no quoted or
-authored rows yet. All nine facets on the current map have human rows, so a
-run against today's principles spends nothing. GitLab maps to none, so it is
-not generated onto either. A new company inherits the rows of the facets its
-principles map to.
+Resume-safe. Default `scope` is `empty`: write only onto a facet that has no
+quoted or authored rows yet. `scope: all` appends eight generated rows to every
+facet that does not already have eight, and keeps every human ref. GitLab maps
+to none, so it is not generated onto either way. A new company inherits the
+rows of the facets its principles map to.
 
 Locally, for a count without a key:
 
 ```
 PORRIDGE_DRY_RUN=1 PRINCIPLES_ROOT=../principles python3 scripts/generate.py
+PORRIDGE_DRY_RUN=1 PORRIDGE_ALL=1 PRINCIPLES_ROOT=../principles python3 scripts/generate.py
 ```
 
 The prompt is `prompt.md`, read at run time. The model is xAI `grok-4.6`.
