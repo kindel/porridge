@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Write missing stubs
+      - name: Sync stubs
         run: python3 scripts/sync_from_principles.py
       - name: Open a pull request
         uses: peter-evans/create-pull-request@v6
@@ -31,12 +31,16 @@ jobs:
           add-paths: |
             content/porridge
             .kindel/last-sync.txt
-          commit-message: Add Porridge pages for new principles.
-          title: Add Porridge pages for new principles
+          commit-message: Sync Porridge pages with principles.
+          title: Sync Porridge pages with principles
           body: |
-            Stubs generated from `kindel/principles` so each principle has a URL.
+            Stubs synced from `kindel/principles` so each principle has a URL.
 
-            Existing pages are left alone. Company indexes stay unrendered.
-            Calibration still comes from the principles module at site-pin time.
+            New principles gain a stub; a stub whose record was renamed or
+            removed upstream is deleted, because a stale stub fails the whole
+            site build. Existing pages that still match a record are left
+            alone. Company indexes stay unrendered. Calibration still comes
+            from the principles module at site-pin time.
 
-            See `.kindel/last-sync.txt` for the SHA this ran against.
+            See `.kindel/last-sync.txt` for the SHA this ran against and what
+            was added or removed.

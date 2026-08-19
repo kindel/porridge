@@ -58,30 +58,57 @@ def main() -> int:
     idx = load_index()
     sha = principles_sha()
     added = []
+    removed = []
+    known_cids = set()
     for company in idx.get("companies", []):
         cid = company["id"]
+        known_cids.add(cid)
         cdir = CONTENT / cid
         cdir.mkdir(parents=True, exist_ok=True)
         index_path = cdir / "_index.md"
         if not index_path.exists():
             index_path.write_text(company_index_text(company["name"]))
             added.append(f"{cid}/_index.md")
+        expected = set()
         for p in company.get("principles", []):
             slug = p.get("slug") or str(p["id"])
             name = p["name"]
+            expected.add(slug)
             path = cdir / f"{slug}.md"
             if path.exists():
                 continue
             path.write_text(page_text(cid, slug, name))
             added.append(f"{cid}/{slug}.md")
+        # A stub whose record was renamed or removed upstream (SCHEMA.md
+        # permits both) points single.html at a record that no longer
+        # exists, and its errorf fails the whole site build. Prune it.
+        for stale in sorted(cdir.glob("*.md")):
+            if stale.name == "_index.md" or stale.stem in expected:
+                continue
+            stale.unlink()
+            removed.append(f"{cid}/{stale.name}")
+
+    # A company removed upstream orphans its whole directory the same way.
+    for cdir in sorted(CONTENT.iterdir()):
+        if not cdir.is_dir() or cdir.name in known_cids:
+            continue
+        for stale in sorted(cdir.glob("*.md")):
+            stale.unlink()
+            removed.append(f"{cdir.name}/{stale.name}")
+        if not any(cdir.iterdir()):
+            cdir.rmdir()
 
     lines = [f"principles {sha}", ""]
-    if not added:
-        lines.append("no missing stubs")
+    if not added and not removed:
+        lines.append("no missing or stale stubs")
         print("\n".join(lines))
         return 0
-    lines.append("added:")
-    lines.extend(f"  {a}" for a in added)
+    if added:
+        lines.append("added:")
+        lines.extend(f"  {a}" for a in added)
+    if removed:
+        lines.append("removed (record gone upstream):")
+        lines.extend(f"  {r}" for r in removed)
     report = ROOT / ".kindel" / "last-sync.txt"
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text("\n".join(lines) + "\n")

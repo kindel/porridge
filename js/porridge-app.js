@@ -141,14 +141,21 @@
       mergedRows.push(r);
     });
     var principles = co.principles || [];
+    var principlesByCompany = {};
+    companies.forEach(function (c) { principlesByCompany[c.id] = c.principles || []; });
     var rows = mergedRows.map(function (r) {
       var isQuoted = r.words === "quoted";
       var srcSpan = isQuoted ? "<span class=\"lps-row-source\">quoted</span>" : "";
       var trClass = isQuoted ? " class=\"lps-row-shared\"" : "";
+      // A row pulled in via the facet map keeps its own company's tokens:
+      // {lp:<slug>} names a principle of the company that wrote the row, so
+      // it must expand against that company's list, not the viewing one's.
+      var rowCompany = r._sourceCompany || companyId;
+      var rowPrinciples = principlesByCompany[rowCompany] || [];
       return "<tr" + trClass + "><th scope=\"row\">" + esc(r.situation) + srcSpan + "</th>" +
-        "<td data-label=\"Under\">" + expandLp(r.under, principles, companyId) + "</td>" +
-        "<td data-label=\"Just Right\">" + expandLp(r.justRight, principles, companyId) + "</td>" +
-        "<td data-label=\"Over\">" + expandLp(r.over, principles, companyId) + "</td></tr>";
+        "<td data-label=\"Under\">" + expandLp(r.under, rowPrinciples, rowCompany) + "</td>" +
+        "<td data-label=\"Just Right\">" + expandLp(r.justRight, rowPrinciples, rowCompany) + "</td>" +
+        "<td data-label=\"Over\">" + expandLp(r.over, rowPrinciples, rowCompany) + "</td></tr>";
     }).join("");
     var jump = principles.map(function (p) {
       var q = "?p=" + encodeURIComponent(p.slug) + (companyId === def ? "" : "&c=" + encodeURIComponent(companyId));
@@ -268,7 +275,10 @@
       var c = param("c") || def;
       if (!companies.some(function (x) { return x.id === c; })) c = def;
       var p = param("p");
-      if (!p) {
+      // The index carries no definitions, so backfill them from the records
+      // before any list render, including the fallback after a failed
+      // single-page load: a stale ?p= must not produce blank cards.
+      function showList(companyId) {
         var pending = [];
         companies.forEach(function (co) {
           (co.principles || []).forEach(function (pr) {
@@ -280,7 +290,10 @@
             }).catch(function () {}));
           });
         });
-        return Promise.all(pending).then(function () { renderList(bank, c); });
+        return Promise.all(pending).then(function () { renderList(bank, companyId); });
+      }
+      if (!p) {
+        return showList(c);
       }
       var co = companies.filter(function (x) { return x.id === c; })[0] || companies[0];
       var thisPrincipleEntry = null;
@@ -322,7 +335,7 @@
           return fetch(turl).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
             .then(function (teach) { renderSingle(bank, c, p, rec, teach, facetsData, principleById, companyNames, recCache); });
         });
-      }).catch(function () { renderList(bank, c); });
+      }).catch(function () { return showList(c); });
     }).catch(function (err) {
       root.innerHTML = "<p>Could not load the principle sets.</p>";
       console.error(err);
