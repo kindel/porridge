@@ -51,7 +51,7 @@
   {{ if gt $i 0 }}{{ $prev = index $principles (sub $i 1) }}{{ end }}
   {{ if lt $i (sub (len $principles) 1) }}{{ $next = index $principles (add $i 1) }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
-  <article class="kld-topics-page lps-page lps-principle">
+  <article class="kld-topics-page lps-page tool-page lps-principle">
     <nav class="lps-jump" aria-label="All principles">
       <ol>
         {{ range $principles }}
