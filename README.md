@@ -49,3 +49,7 @@ Adding a company is an issue on kindel/principles, then a content file here for 
 ## App card
 
 This repo ships `card.json` and `icon.png` as the listing for any host. kindelwww and other hosts read these files to display Porridge in their app indexes.
+
+## License
+
+MIT. Copyright (c) 2026 Kindel, LLC. Keep the copyright notice and permission notice in all copies.
