@@ -5,7 +5,6 @@
     {{ partial "site-navigation.html" . }}
     <div class="kld-subhero-inner">
       <h1>Porridge</h1>
-      <p>Just as it is possible to not live a principle, it is possible to over-do them. The key is to find the balance and be like <a href="https://blog.kindel.com/2019/03/21/just-right-porridge-and-leadership-principles/">mama bear's porridge: Just Right</a>.</p>
     </div>
   </header>
 {{ end }}
@@ -20,11 +19,9 @@
   {{ if $lpsIdxRes }}{{ $lpsIdx = $lpsIdxRes | transform.Unmarshal }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
   <article class="kld-topics-page lps-page">
-    <p class="porridge-post-link">
-      <a href="https://blog.kindel.com/2019/03/21/just-right-porridge-and-leadership-principles/">Just Right Porridge and Leadership Principles</a>
-      <span aria-hidden="true"> · </span>
-      <a href="https://blog.kindel.com/2019/05/16/the-tension-is-intentional/">The Tension is Intentional</a>
-    </p>
+    {{ if and (index .Site.Data.tools "porridge") (templates.Exists "partials/tool-header.html") }}
+      {{ partial "tool-header.html" (index .Site.Data.tools "porridge") }}
+    {{ end }}
     <section class="lps-intro" aria-labelledby="lps-how-title">
       <p class="kld-section-label">How to use it</p>
       <h2 id="lps-how-title">Get the balance right.</h2>
