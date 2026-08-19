@@ -2,7 +2,7 @@
   {{ $pidxRes := resources.Get "data/principles/index.json" }}
   {{ if not $pidxRes }}{{ errorf "missing data/principles/index.json; bump kindel/principles and mount data to assets/data/principles" }}{{ end }}
   {{ $card := index .Site.Data.tools "porridge" }}
-  <header class="kld-subhero" style="background-image: linear-gradient(90deg, rgba(17, 24, 39, 0.94) 0%, rgba(17, 24, 39, 0.78) 46%, rgba(17, 24, 39, 0.25) 100%), url('/images/porridge-hero.jpg');">
+  <header class="kld-subhero kld-subhero--tight" style="background-image: linear-gradient(90deg, rgba(17, 24, 39, 0.94) 0%, rgba(17, 24, 39, 0.78) 46%, rgba(17, 24, 39, 0.25) 100%), url('/images/porridge-hero.jpg');">
     {{ partial "site-navigation.html" . }}
     <div class="kld-subhero-inner">
       {{ if eq $card.status "beta" }}<p class="kld-eyebrow">BETA</p>{{ end }}
