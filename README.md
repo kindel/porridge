@@ -48,20 +48,20 @@ Adding a company is an issue on kindel/principles, then a content file here for 
 
 ## Generate facet examples
 
+The porridge table is generated, like BIQ example packs. Human rows in
+[`kindel/principles`](https://github.com/kindel/principles) (Amazon authored,
+Dawn quoted) are source for the generator. They are not the table.
+
 Run the **Generate facet examples** action. It is manual only, because every
-real run spends xAI credits. Leave `dry_run` on for the first pass to see how
-many calls it would make, then run it again with `dry_run` off. Generated rows
-arrive as a pull request on [`kindel/principles`](https://github.com/kindel/principles),
-because they are model-written calibration and a human should read them first.
+real run spends xAI credits. Leave `dry_run` on for the first pass, then run
+it again with `dry_run` off. Generated rows arrive as a pull request on
+principles. A new company inherits them by mapping to the facet.
 
 The key lives in the `XAI_API_KEY` repository secret. Opening the principles
-PR uses `CASCADE_TOKEN`. There is no reason to hold either locally.
+PR uses `CASCADE_TOKEN`.
 
-Resume-safe. It writes onto a facet only when that facet has no quoted or
-authored rows yet. All nine facets on the current map have human rows, so a
-run against today's principles spends nothing. GitLab maps to none, so it is
-not generated onto either. A new company inherits the rows of the facets its
-principles map to.
+Resume-safe. Every facet that does not already have eight generated rows is
+pending. Human source refs are not a reason to skip.
 
 Locally, for a count without a key:
 

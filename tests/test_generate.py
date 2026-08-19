@@ -8,7 +8,8 @@ import unittest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "scripts"))
 
-from generate import (classify_facet, parse_rows, row_words, stamp,
+from generate import (N_ROWS, classify_facet, is_complete_set, needs_generation,
+                      parse_rows, row_words, split_facet_rows, stamp,
                       style_examples)
 
 
@@ -73,6 +74,23 @@ class ClassifyTest(unittest.TestCase):
             generated(),
         ]}
         self.assertEqual("human", classify_facet(facet, records))
+        human, gen = split_facet_rows(facet, records)
+        self.assertEqual(1, len(human))
+        self.assertEqual(1, len(gen))
+        self.assertTrue(needs_generation(facet, records))
+
+    def test_a_facet_with_eight_generated_rows_is_skipped(self):
+        rows = [generated(str(i)) for i in range(8)]
+        for i, r in enumerate(rows):
+            r["id"] = "gen-%d" % i
+        facet = {"id": "full", "rows": rows}
+        self.assertFalse(needs_generation(facet, {}))
+
+    def test_a_human_source_facet_still_needs_generated_rows(self):
+        records = {1002: rec(1002, "amazon", [authored()])}
+        facet = {"id": "acts-like-an-owner",
+                 "rows": [{"principle": 1002, "id": "row-a"}]}
+        self.assertTrue(needs_generation(facet, records))
 
 
 class StyleExamplesTest(unittest.TestCase):
@@ -108,6 +126,29 @@ class StampTest(unittest.TestCase):
     def test_parse_rows_accepts_fenced_json(self):
         text = "```json\n{\"rows\": [{\"id\": \"a\"}]}\n```"
         self.assertEqual([{"id": "a"}], parse_rows(text))
+
+    def _valid(self, i):
+        return {
+            "id": "row-%d" % i,
+            "situation": "Situation %d" % i,
+            "under": "Under does too little.",
+            "justRight": "Just right names the tradeoff.",
+            "over": "Over does too much.",
+        }
+
+    def test_five_stamped_rows_are_not_a_complete_set(self):
+        rows = stamp([self._valid(i) for i in range(5)])
+        self.assertEqual(5, len(rows))
+        self.assertFalse(is_complete_set(rows))
+        facet = {"id": "partial", "rows": rows}
+        self.assertTrue(needs_generation(facet, {}))
+
+    def test_eight_stamped_rows_are_a_complete_set(self):
+        rows = stamp([self._valid(i) for i in range(N_ROWS)])
+        self.assertEqual(N_ROWS, len(rows))
+        self.assertTrue(is_complete_set(rows))
+        facet = {"id": "full", "rows": rows}
+        self.assertFalse(needs_generation(facet, {}))
 
 
 if __name__ == "__main__":
