@@ -21,7 +21,7 @@
   {{ $lpsIdx := dict }}
   {{ if $lpsIdxRes }}{{ $lpsIdx = $lpsIdxRes | transform.Unmarshal }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
-  <article class="kld-topics-page lps-page">
+  <article class="kld-topics-page lps-page tool-page">
     {{ if and (index .Site.Data.tools "porridge") (templates.Exists "partials/tool-header.html") }}
       {{ partial "tool-header.html" (index .Site.Data.tools "porridge") }}
     {{ end }}
