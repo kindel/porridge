@@ -47,11 +47,13 @@ check("owning-company link",
   m.expandLp("See {lp:deliver-results} first.", amazon, "amazon"),
   'See <a href="?c=amazon&p=deliver-results">Deliver Results</a> first.');
 
-// A foreign row expands against its own company, so the link carries that
-// company's id, not the viewing page's.
+// A foreign row expands against its own company's list, so the link carries
+// that company's id, not the viewing page's: a dawn row on an amazon page
+// links into dawn's set.
+const dawn = [{ slug: "extreme-ownership", name: "Extreme Ownership" }];
 check("foreign-row link keeps its company",
-  m.expandLp("See {lp:ownership}.", amazon, "amazon"),
-  'See <a href="?c=amazon&p=ownership">Ownership</a>.');
+  m.expandLp("See {lp:extreme-ownership}.", dawn, "dawn"),
+  'See <a href="?c=dawn&p=extreme-ownership">Extreme Ownership</a>.');
 
 // A slug the owning company does not have stays literal rather than
 // linking to some other company's principle.
