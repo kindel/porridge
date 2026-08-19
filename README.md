@@ -46,6 +46,31 @@ kindelwww mounts this module for layouts, content, js, and css, and paints the K
 
 Adding a company is an issue on kindel/principles, then a content file here for each new single, under `content/porridge/<company>/`.
 
+## Generate facet examples
+
+Run the **Generate facet examples** action. It is manual only, because every
+real run spends xAI credits. Leave `dry_run` on for the first pass to see how
+many calls it would make, then run it again with `dry_run` off. Generated rows
+arrive as a pull request on [`kindel/principles`](https://github.com/kindel/principles),
+because they are model-written calibration and a human should read them first.
+
+The key lives in the `XAI_API_KEY` repository secret. Opening the principles
+PR uses `CASCADE_TOKEN`. There is no reason to hold either locally.
+
+Resume-safe. It writes onto a facet only when that facet has no quoted or
+authored rows yet. All nine facets on the current map have human rows, so a
+run against today's principles spends nothing. GitLab maps to none, so it is
+not generated onto either. A new company inherits the rows of the facets its
+principles map to.
+
+Locally, for a count without a key:
+
+```
+PORRIDGE_DRY_RUN=1 PRINCIPLES_ROOT=../principles python3 scripts/generate.py
+```
+
+The prompt is `prompt.md`, read at run time. The model is xAI `grok-4.6`.
+
 ## App card
 
 This repo ships `card.json` and `icon.png` as the listing for any host. kindelwww and other hosts read these files to display Porridge in their app indexes.

@@ -107,6 +107,20 @@
       var facet = facetMap[facetId];
       if (!facet) return;
       (facet.rows || []).forEach(function (ref) {
+        if (ref.under && ref.principle == null) {
+          var gkey = "generated:" + facetId + ":" + ref.id;
+          if (seenKeys[gkey]) return;
+          seenKeys[gkey] = true;
+          mergedRows.push({
+            id: ref.id,
+            situation: ref.situation,
+            under: ref.under,
+            justRight: ref.justRight,
+            over: ref.over,
+            words: ref.words || "generated"
+          });
+          return;
+        }
         var srcPid = String(ref.principle);
         var rowId = ref.id;
         var key = srcPid + ":" + rowId;
@@ -145,8 +159,10 @@
     companies.forEach(function (c) { principlesByCompany[c.id] = c.principles || []; });
     var rows = mergedRows.map(function (r) {
       var isQuoted = r.words === "quoted";
-      var srcSpan = isQuoted ? "<span class=\"lps-row-source\">quoted</span>" : "";
-      var trClass = isQuoted ? " class=\"lps-row-shared\"" : "";
+      var isGenerated = r.words === "generated";
+      var srcSpan = isQuoted ? "<span class=\"lps-row-source\">quoted</span>"
+        : (isGenerated ? "<span class=\"lps-row-source\">generated</span>" : "");
+      var trClass = (isQuoted || isGenerated) ? " class=\"lps-row-shared\"" : "";
       // A row pulled in via the facet map keeps its own company's tokens:
       // {lp:<slug>} names a principle of the company that wrote the row, so
       // it must expand against that company's list, not the viewing one's.

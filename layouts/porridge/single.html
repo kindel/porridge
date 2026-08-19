@@ -118,6 +118,14 @@
         {{ $facet := index $facetMap $facetId }}
         {{ if $facet }}
           {{ range $facet.rows }}
+            {{ if and .under (not .principle) }}
+              {{ $key := printf "generated:%s:%s" $facetId .id }}
+              {{ if not (in $seenKeys $key) }}
+                {{ $seenKeys = $seenKeys | append $key }}
+                {{ $genRow := merge . (dict "words" "generated") }}
+                {{ $mergedRows = $mergedRows | append $genRow }}
+              {{ end }}
+            {{ else }}
             {{ $srcPid := string .principle }}
             {{ $rowId := .id }}
             {{ $key := printf "%s:%s" $srcPid $rowId }}
@@ -138,6 +146,7 @@
                   {{ end }}
                 {{ end }}
               {{ end }}
+            {{ end }}
             {{ end }}
           {{ end }}
         {{ end }}
@@ -164,20 +173,25 @@
           <tbody>
             {{ range $mergedRows }}
               {{ $isQuoted := eq .words "quoted" }}
+              {{ $isGenerated := eq .words "generated" }}
               {{/* A row pulled in via the facet map keeps its own company's
                    tokens: {lp:<slug>} names a principle of the company that
                    wrote the row, so it must expand against that company's
-                   list, not the viewing company's. */}}
+                   list, not the viewing company's. Generated rows belong to
+                   the facet, so they expand against the page's company. */}}
               {{ $rowCompany := ._sourceCompany | default $company }}
               {{ $rowPrinciples := $principles }}
               {{ if isset $principlesByCompany $rowCompany }}
                 {{ $rowPrinciples = index $principlesByCompany $rowCompany }}
               {{ end }}
-              <tr{{ if $isQuoted }} class="lps-row-shared"{{ end }}>
+              <tr{{ if or $isQuoted $isGenerated }} class="lps-row-shared"{{ end }}>
                 <th scope="row">
                   {{ .situation }}
                   {{ if $isQuoted }}
                     <span class="lps-row-source">quoted</span>
+                  {{ end }}
+                  {{ if $isGenerated }}
+                    <span class="lps-row-source">generated</span>
                   {{ end }}
                 </th>
                 <td data-label="Under">{{ partial "lp-tokens.html" (dict "text" .under "principles" $rowPrinciples "company" $rowCompany) }}</td>
