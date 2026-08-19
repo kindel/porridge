@@ -228,6 +228,11 @@ def stamp(rows, reserved=None):
     return out
 
 
+def is_complete_set(rows):
+    """A table is complete only when stamp kept N_ROWS. Partial sets stay pending."""
+    return isinstance(rows, list) and len(rows) >= N_ROWS
+
+
 def system_prompt():
     return open(PROMPT, encoding="utf-8").read().strip()
 
@@ -286,8 +291,8 @@ def call(facet, records_by_pid, examples, api_key, reserved_ids=None):
                 raw = json.loads(resp.read().decode())
             text = (((raw.get("choices") or [{}])[0].get("message") or {}).get("content")) or ""
             rows = stamp(parse_rows(text) or [], reserved=reserved_ids)
-            if len(rows) < 5:
-                raise ValueError("too few valid rows: %d" % len(rows))
+            if not is_complete_set(rows):
+                raise ValueError("incomplete set: %d, need %d" % (len(rows), N_ROWS))
             return rows
         except Exception as e:
             last_err = str(e)
