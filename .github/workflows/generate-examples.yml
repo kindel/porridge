@@ -43,7 +43,7 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           PORRIDGE_DRY_RUN: ${{ inputs.dry_run }}
           PORRIDGE_FACET: ${{ inputs.facet }}
-          PRINCIPLES_ROOT: principles
+          PRINCIPLES_ROOT: ${{ github.workspace }}/principles
         shell: bash
         working-directory: porridge
         run: |
