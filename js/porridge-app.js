@@ -3,6 +3,7 @@
   var INDEX = cfg.principlesIndex || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/index.json";
   var RECORD = cfg.principlesRecord || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/{company}/{slug}.json";
   var FACETS = cfg.facetsJson || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/facets.json";
+  var TEACH = cfg.teaching || "https://cdn.jsdelivr.net/gh/kindel/biq@main/data/lps/{slug}.json";
   var root = document.getElementById("porridge-root");
   if (!root) return;
 
@@ -21,6 +22,12 @@
   function recUrl(company, slug) {
     return RECORD.replace("{company}", company).replace("{slug}", slug);
   }
+  function teachUrl(company, slug) {
+    // data/lps in kindel/biq is an Amazon-only copy. Asking it for another
+    // company's slug returns Amazon's prose under that company's name.
+    if (company !== "amazon") return "";
+    return TEACH.replace("{slug}", slug);
+  }
   function esc(s) {
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -29,23 +36,21 @@
     if (!g) return "";
     return g.replace(/-/g, " ");
   }
-
-  // Expand {lp:<slug>} tokens against the principle list of the company that
-  // owns the text, mirroring layouts/partials/lp-tokens.html. companyId is
-  // the owning company, companyPrinciples its principle list, and def the
-  // default company (whose links omit ?c=). Escapes the text, so the return
-  // value is HTML.
-  function expandTokens(text, companyId, companyPrinciples, def) {
-    return esc(text).replace(/\{lp:([a-z0-9-]+)\}/g, function (token, slug) {
-      var match = null;
-      (companyPrinciples || []).forEach(function (p) {
-        if (p.slug === slug) match = p;
-      });
-      if (!match) return token;
-      var q = "?p=" + encodeURIComponent(slug) +
-        (companyId === def ? "" : "&c=" + encodeURIComponent(companyId));
-      return "<a href=\"" + q + "\">" + esc(match.name) + "</a>";
+  function lpHref(companyId, slug) {
+    return "?c=" + encodeURIComponent(companyId) + "&p=" + encodeURIComponent(slug);
+  }
+  // Escape first, then expand {lp:<slug>} into query-param links. Tokens
+  // become trusted markup; everything else stays escaped, matching Hugo's
+  // lp-tokens.html + safeHTML split.
+  function expandLp(text, principles, companyId) {
+    var out = esc(text);
+    (principles || []).forEach(function (p) {
+      var token = "{lp:" + p.slug + "}";
+      if (out.indexOf(token) === -1) return;
+      var link = "<a href=\"" + lpHref(companyId, p.slug) + "\">" + esc(p.name) + "</a>";
+      out = out.split(token).join(link);
     });
+    return out;
   }
 
   function renderList(bank, companyId) {
@@ -83,7 +88,7 @@
     });
   }
 
-  function renderSingle(bank, companyId, slug, rec, facetsData, principleById, companyNames, recCache) {
+  function renderSingle(bank, companyId, slug, rec, teach, facetsData, principleById, companyNames, recCache) {
     var companies = bank.companies || [];
     var def = companies[0] && companies[0].id;
     var co = companies.filter(function (c) { return c.id === companyId; })[0] || companies[0];
@@ -135,6 +140,7 @@
       seenKeys[key] = true;
       mergedRows.push(r);
     });
+    var principles = co.principles || [];
     var principlesByCompany = {};
     companies.forEach(function (c) { principlesByCompany[c.id] = c.principles || []; });
     var rows = mergedRows.map(function (r) {
@@ -142,30 +148,111 @@
       var srcSpan = isQuoted ? "<span class=\"lps-row-source\">quoted</span>" : "";
       var trClass = isQuoted ? " class=\"lps-row-shared\"" : "";
       // A row pulled in via the facet map keeps its own company's tokens:
-      // {lp:<slug>} names a principle of the company that wrote the row.
+      // {lp:<slug>} names a principle of the company that wrote the row, so
+      // it must expand against that company's list, not the viewing one's.
       var rowCompany = r._sourceCompany || companyId;
       var rowPrinciples = principlesByCompany[rowCompany] || [];
       return "<tr" + trClass + "><th scope=\"row\">" + esc(r.situation) + srcSpan + "</th>" +
-        "<td data-label=\"Under\">" + expandTokens(r.under, rowCompany, rowPrinciples, def) + "</td>" +
-        "<td data-label=\"Just Right\">" + expandTokens(r.justRight, rowCompany, rowPrinciples, def) + "</td>" +
-        "<td data-label=\"Over\">" + expandTokens(r.over, rowCompany, rowPrinciples, def) + "</td></tr>";
+        "<td data-label=\"Under\">" + expandLp(r.under, rowPrinciples, rowCompany) + "</td>" +
+        "<td data-label=\"Just Right\">" + expandLp(r.justRight, rowPrinciples, rowCompany) + "</td>" +
+        "<td data-label=\"Over\">" + expandLp(r.over, rowPrinciples, rowCompany) + "</td></tr>";
     }).join("");
-    var jump = (co.principles || []).map(function (p) {
+    var jump = principles.map(function (p) {
       var q = "?p=" + encodeURIComponent(p.slug) + (companyId === def ? "" : "&c=" + encodeURIComponent(companyId));
       var cur = p.slug === slug ? " class=\"is-current\"" : "";
       return "<li" + cur + "><a href=\"" + q + "\">" + esc(p.name) + "</a></li>";
     }).join("");
     var eyebrow = rec.group ? " · " + esc(groupLabel(rec.group)) : "";
+    var whyHtml = "";
+    if (teach && teach.why && teach.why.length) {
+      whyHtml = "<section class=\"lps-section\" aria-labelledby=\"lps-why-title\">" +
+        "<p class=\"kld-section-label\">Why it matters</p>" +
+        "<h2 id=\"lps-why-title\">What this principle is for.</h2>" +
+        teach.why.map(function (para) {
+          return "<p>" + expandLp(para, principles, companyId) + "</p>";
+        }).join("") +
+        "</section>";
+    }
+    var calIntro = "";
+    if (teach && teach.calibrationIntro) {
+      calIntro = "<p class=\"lps-cal-intro\">" + expandLp(teach.calibrationIntro, principles, companyId) + "</p>";
+    }
+    var afterCal = "";
+    if (teach && teach.examples && teach.examples.length) {
+      afterCal += "<section class=\"lps-section\" aria-labelledby=\"lps-ex-title\">" +
+        "<p class=\"kld-section-label\">Examples</p>" +
+        "<h2 id=\"lps-ex-title\">What it looks like in the work.</h2>" +
+        "<div class=\"lps-examples\">" +
+        teach.examples.map(function (ex) {
+          return "<article><h3>" + esc(ex.title) + "</h3><p>" +
+            expandLp(ex.body, principles, companyId) + "</p></article>";
+        }).join("") +
+        "</div></section>";
+    }
+    if (teach && teach.looksLike && (teach.looksLike.individual || teach.looksLike.manager)) {
+      var looks = "";
+      if (teach.looksLike.individual) {
+        looks += "<article><h3>Individual</h3><p>" +
+          expandLp(teach.looksLike.individual, principles, companyId) + "</p></article>";
+      }
+      if (teach.looksLike.manager) {
+        looks += "<article><h3>Manager</h3><p>" +
+          expandLp(teach.looksLike.manager, principles, companyId) + "</p></article>";
+      }
+      afterCal += "<section class=\"lps-section\" aria-labelledby=\"lps-looks-title\">" +
+        "<p class=\"kld-section-label\">In the role</p>" +
+        "<h2 id=\"lps-looks-title\">Individual and manager.</h2>" +
+        "<div class=\"lps-looks\">" + looks + "</div></section>";
+    }
+    if (teach && teach.deepen && teach.deepen.length) {
+      afterCal += "<section class=\"lps-section\" aria-labelledby=\"lps-deep-title\">" +
+        "<p class=\"kld-section-label\">Go deeper</p>" +
+        "<h2 id=\"lps-deep-title\">Questions that make the principle concrete.</h2>" +
+        "<ol class=\"lps-deepen\">" +
+        teach.deepen.map(function (q) {
+          return "<li>" + expandLp(q, principles, companyId) + "</li>";
+        }).join("") +
+        "</ol></section>";
+    }
+    if (teach && teach.blog && teach.blog.length) {
+      afterCal += "<section class=\"lps-section\" aria-labelledby=\"lps-blog-title\">" +
+        "<p class=\"kld-section-label\">From the blog</p>" +
+        "<h2 id=\"lps-blog-title\">Writing that goes deeper.</h2>" +
+        "<ul class=\"lps-blog\">" +
+        teach.blog.map(function (item) {
+          var note = item.note ? "<p>" + esc(item.note) + "</p>" : "";
+          return "<li><a href=\"" + esc(item.url) + "\">" + esc(item.title) + "</a>" + note + "</li>";
+        }).join("") +
+        "</ul></section>";
+    }
+    if (teach && teach.related && teach.related.length) {
+      afterCal += "<section class=\"lps-section\" aria-labelledby=\"lps-rel-title\">" +
+        "<p class=\"kld-section-label\">Related</p>" +
+        "<h2 id=\"lps-rel-title\">Principles that sit next to this one.</h2>" +
+        "<ul class=\"lps-related\">" +
+        teach.related.map(function (rel) {
+          var relName = rel.id;
+          principles.forEach(function (p) {
+            if (p.slug === rel.id) relName = p.name;
+          });
+          var note = rel.note ? "<p>" + expandLp(rel.note, principles, companyId) + "</p>" : "";
+          return "<li><a href=\"" + lpHref(companyId, rel.id) + "\">" + esc(relName) + "</a>" + note + "</li>";
+        }).join("") +
+        "</ul></section>";
+    }
     root.innerHTML =
       "<p class=\"kld-eyebrow\"><a href=\"" + (listQ || "?") + "\">Porridge</a>" + eyebrow + "</p>" +
       "<h1>" + esc(rec.name) + "</h1>" +
-      "<p>" + expandTokens(rec.definition || "", companyId, co.principles || [], def) + "</p>" +
+      "<p>" + expandLp(rec.definition || "", principles, companyId) + "</p>" +
       "<nav class=\"lps-jump\" aria-label=\"All principles\"><ol>" + jump + "</ol></nav>" +
-      "<section class=\"lps-section\"><p class=\"kld-section-label\">Calibration</p>" +
-      "<h2>Under, just right, over.</h2>" +
+      whyHtml +
+      "<section class=\"lps-section\" aria-labelledby=\"lps-cal-title\"><p class=\"kld-section-label\">Calibration</p>" +
+      "<h2 id=\"lps-cal-title\">Under, just right, over.</h2>" +
+      calIntro +
       "<div class=\"lps-table-wrap\"><table class=\"lps-table\"><thead><tr>" +
       "<th scope=\"col\">Situation</th><th scope=\"col\">Under</th><th scope=\"col\">Just Right</th><th scope=\"col\">Over</th>" +
-      "</tr></thead><tbody>" + rows + "</tbody></table></div></section>";
+      "</tr></thead><tbody>" + rows + "</tbody></table></div></section>" +
+      afterCal;
   }
 
   function boot() {
@@ -243,7 +330,10 @@
           }).catch(function () {});
         });
         return Promise.all(fetches).then(function () {
-          renderSingle(bank, c, p, rec, facetsData, principleById, companyNames, recCache);
+          var turl = teachUrl(c, p);
+          if (!turl) return renderSingle(bank, c, p, rec, null, facetsData, principleById, companyNames, recCache);
+          return fetch(turl).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+            .then(function (teach) { renderSingle(bank, c, p, rec, teach, facetsData, principleById, companyNames, recCache); });
         });
       }).catch(function () { return showList(c); });
     }).catch(function (err) {

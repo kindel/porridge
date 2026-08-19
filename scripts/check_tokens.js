@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Checks {lp:<slug>} token expansion in the standalone app. Lifts esc() and
-// expandTokens() out of js/porridge-app.js rather than restating them, so
-// this cannot drift from what the page actually runs.
+// Checks {lp:<slug>} token expansion in the standalone app. Lifts esc(),
+// lpHref(), and expandLp() out of js/porridge-app.js rather than restating
+// them, so this cannot drift from what the page actually runs.
 //
 //   node scripts/check_tokens.js
 //
@@ -23,10 +23,12 @@ function lift(src) {
     }
     return "";
   };
-  const esc = grab("esc");
-  const expand = grab("expandTokens");
-  if (!expand) throw new Error("expandTokens not found in js/porridge-app.js");
-  return new Function(esc + "\n" + expand + "\nreturn { esc: esc, expandTokens: expandTokens };")();
+  const expand = grab("expandLp");
+  if (!expand) throw new Error("expandLp not found in js/porridge-app.js");
+  return new Function(
+    grab("esc") + "\n" + grab("lpHref") + "\n" + expand +
+    "\nreturn { esc: esc, expandLp: expandLp };"
+  )();
 }
 
 const m = lift(path.join(ROOT, "js", "porridge-app.js"));
@@ -41,25 +43,26 @@ function check(label, got, want) {
 }
 
 // A token expands to a link into the owning company's set.
-check("default-company link",
-  m.expandTokens("See {lp:deliver-results} first.", "amazon", amazon, "amazon"),
-  'See <a href="?p=deliver-results">Deliver Results</a> first.');
+check("owning-company link",
+  m.expandLp("See {lp:deliver-results} first.", amazon, "amazon"),
+  'See <a href="?c=amazon&p=deliver-results">Deliver Results</a> first.');
 
-// A non-default company keeps its ?c= parameter.
-check("non-default-company link",
-  m.expandTokens("See {lp:ownership}.", "dawn", amazon, "amazon"),
-  'See <a href="?p=ownership&c=dawn">Ownership</a>.');
+// A foreign row expands against its own company, so the link carries that
+// company's id, not the viewing page's.
+check("foreign-row link keeps its company",
+  m.expandLp("See {lp:ownership}.", amazon, "amazon"),
+  'See <a href="?c=amazon&p=ownership">Ownership</a>.');
 
 // A slug the owning company does not have stays literal rather than
 // linking to some other company's principle.
 check("unknown slug stays literal",
-  m.expandTokens("See {lp:nope}.", "amazon", amazon, "amazon"),
+  m.expandLp("See {lp:nope}.", amazon, "amazon"),
   "See {lp:nope}.");
 
 // The surrounding text is still escaped.
 check("text is escaped",
-  m.expandTokens("a <b> & {lp:ownership}", "amazon", amazon, "amazon"),
-  'a &lt;b&gt; &amp; <a href="?p=ownership">Ownership</a>');
+  m.expandLp("a <b> & {lp:ownership}", amazon, "amazon"),
+  'a &lt;b&gt; &amp; <a href="?c=amazon&p=ownership">Ownership</a>');
 
 // Real corpus texts: every {lp:} token in the corpus must expand against
 // its owning company. All live tokens today are Amazon's, referencing
@@ -75,7 +78,7 @@ if (upstream) {
       for (const r of rec.rows || []) texts.push(r.under || "", r.justRight || "", r.over || "");
       for (const t of texts) {
         if (!t.includes("{lp:")) continue;
-        const out = m.expandTokens(t, co.id, list, "amazon");
+        const out = m.expandLp(t, list, co.id);
         if (out.includes("{lp:")) {
           fail.push(`${co.id}/${p.slug}: token survives expansion in: ${t.slice(0, 60)}...`);
         }

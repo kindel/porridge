@@ -26,8 +26,8 @@ The standalone page fetches `kindel/principles` from jsDelivr. A host that alrea
 <script>
   window.PORRIDGE = {
     principlesIndex: "/data/principles/index.json",
-    principlesRecord: "/data/principles/{company}/{id}.json",
-    teaching: "/data/lps/{id}.json"
+    principlesRecord: "/data/principles/{company}/{slug}.json",
+    teaching: "/data/lps/{slug}.json"
   };
 </script>
 ```
@@ -45,3 +45,7 @@ The standalone page addresses the same content with query parameters, `?c=<compa
 kindelwww mounts this module for layouts, content, js, and css, and paints the Kindel chrome. The module carries its own `layouts/partials/lp-tokens.html`; a site that defines its own will override it, and that override must be company-aware or cross-references will point at the wrong company.
 
 Adding a company is an issue on kindel/principles, then a content file here for each new single, under `content/porridge/<company>/`.
+
+## App card
+
+This repo ships `card.json` and `icon.png` as the listing for any host. kindelwww and other hosts read these files to display Porridge in their app indexes.
