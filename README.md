@@ -26,8 +26,8 @@ The standalone page fetches `kindel/principles` from jsDelivr. A host that alrea
 <script>
   window.PORRIDGE = {
     principlesIndex: "/data/principles/index.json",
-    principlesRecord: "/data/principles/{company}/{id}.json",
-    teaching: "/data/lps/{id}.json"
+    principlesRecord: "/data/principles/{company}/{slug}.json",
+    teaching: "/data/lps/{slug}.json"
   };
 </script>
 ```
@@ -45,3 +45,36 @@ The standalone page addresses the same content with query parameters, `?c=<compa
 kindelwww mounts this module for layouts, content, js, and css, and paints the Kindel chrome. The module carries its own `layouts/partials/lp-tokens.html`; a site that defines its own will override it, and that override must be company-aware or cross-references will point at the wrong company.
 
 Adding a company is an issue on kindel/principles, then a content file here for each new single, under `content/porridge/<company>/`.
+
+## Generate facet examples
+
+The porridge table is generated, like BIQ example packs. Human rows in
+[`kindel/principles`](https://github.com/kindel/principles) (Amazon authored,
+Dawn quoted) are source for the generator. They are not the table.
+
+Run the **Generate facet examples** action. It is manual only, because every
+real run spends xAI credits. Leave `dry_run` on for the first pass, then run
+it again with `dry_run` off. Generated rows arrive as a pull request on
+principles. A new company inherits them by mapping to the facet.
+
+The key lives in the `XAI_API_KEY` repository secret. Opening the principles
+PR uses `CASCADE_TOKEN`.
+
+Resume-safe. Every facet that does not already have eight generated rows is
+pending. Human source refs are not a reason to skip.
+
+Locally, for a count without a key:
+
+```
+PORRIDGE_DRY_RUN=1 PRINCIPLES_ROOT=../principles python3 scripts/generate.py
+```
+
+The prompt is `prompt.md`, read at run time. The model is xAI `grok-4.6`.
+
+## App card
+
+This repo ships `card.json` and `icon.png` as the listing for any host. kindelwww and other hosts read these files to display Porridge in their app indexes.
+
+## License
+
+MIT. Copyright (c) 2026 Kindel, LLC. Keep the copyright notice and permission notice in all copies.

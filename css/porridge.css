@@ -4,6 +4,32 @@
   padding: 0 1.5rem 5rem;
 }
 
+.lps-page.tool-page {
+  max-width: var(--tool-page-width, 1180px);
+  padding: 0 var(--tool-page-pad, 1.25rem) 5rem;
+  box-sizing: border-box;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.porridge-post-link {
+  color: var(--kld-muted);
+  font-size: 0.96rem;
+  margin: 0;
+  padding-top: 2rem;
+}
+
+.porridge-post-link a {
+  color: var(--kld-blue);
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+.porridge-post-link a:hover {
+  color: var(--kld-rust);
+}
+
 .lps-page a {
   color: var(--kld-blue);
   text-decoration: underline;

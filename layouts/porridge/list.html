@@ -1,11 +1,13 @@
 {{ define "header" }}
   {{ $pidxRes := resources.Get "data/principles/index.json" }}
   {{ if not $pidxRes }}{{ errorf "missing data/principles/index.json; bump kindel/principles and mount data to assets/data/principles" }}{{ end }}
-  <header class="kld-subhero" style="background-image: linear-gradient(90deg, rgba(17, 24, 39, 0.94) 0%, rgba(17, 24, 39, 0.78) 46%, rgba(17, 24, 39, 0.25) 100%), url('/images/porridge-hero.jpg');">
+  {{ $card := index .Site.Data.tools "porridge" }}
+  <header class="kld-subhero kld-subhero--tight" style="background-image: linear-gradient(90deg, rgba(17, 24, 39, 0.94) 0%, rgba(17, 24, 39, 0.78) 46%, rgba(17, 24, 39, 0.25) 100%), url('/images/porridge-hero.jpg');">
     {{ partial "site-navigation.html" . }}
     <div class="kld-subhero-inner">
-      <h1>Porridge</h1>
-      <p>Just as it is possible to not live a principle, it is possible to over-do them. The key is to find the balance and be like <a href="https://blog.kindel.com/2019/03/21/just-right-porridge-and-leadership-principles/">mama bear's porridge: Just Right</a>.</p>
+      {{ if eq $card.status "beta" }}<p class="kld-eyebrow">BETA</p>{{ end }}
+      <h1>App: {{ $card.name }}</h1>
+      <p>{{ $card.subtitle }}</p>
     </div>
   </header>
 {{ end }}
@@ -19,7 +21,10 @@
   {{ $lpsIdx := dict }}
   {{ if $lpsIdxRes }}{{ $lpsIdx = $lpsIdxRes | transform.Unmarshal }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
-  <article class="kld-topics-page lps-page">
+  <article class="kld-topics-page lps-page tool-page">
+    {{ if and (index .Site.Data.tools "porridge") (templates.Exists "partials/tool-header.html") }}
+      {{ partial "tool-header.html" (index .Site.Data.tools "porridge") }}
+    {{ end }}
     <section class="lps-intro" aria-labelledby="lps-how-title">
       <p class="kld-section-label">How to use it</p>
       <h2 id="lps-how-title">Get the balance right.</h2>

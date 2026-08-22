@@ -51,7 +51,7 @@
   {{ if gt $i 0 }}{{ $prev = index $principles (sub $i 1) }}{{ end }}
   {{ if lt $i (sub (len $principles) 1) }}{{ $next = index $principles (add $i 1) }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
-  <article class="kld-topics-page lps-page lps-principle">
+  <article class="kld-topics-page lps-page tool-page lps-principle">
     <nav class="lps-jump" aria-label="All principles">
       <ol>
         {{ range $principles }}
@@ -82,9 +82,11 @@
       {{ $principleById := dict }}
       {{ $principleByKey := dict }}
       {{ $companyNames := dict }}
+      {{ $principlesByCompany := dict }}
       {{ range $pidx.companies }}
         {{ $co := .id }}
         {{ $companyNames = merge $companyNames (dict $co .name) }}
+        {{ $principlesByCompany = merge $principlesByCompany (dict $co .principles) }}
         {{ range .principles }}
           {{ $entry := dict "id" .id "company" $co "slug" .slug "name" .name "facets" .facets }}
           {{ $principleById = merge $principleById (dict (string .id) $entry) }}
@@ -108,7 +110,8 @@
         {{ $thisNumericId = .id }}
         {{ $thisFacets = .facets | default slice }}
       {{ end }}
-      {{/* Gather rows from facet map: (principle_id, row_id) -> row data with source */}}
+      {{/* App table is generated rows only. Human {principle,id} refs and
+           the principle's own rows stay in principles as generator source. */}}
       {{ $seenKeys := slice }}
       {{ $mergedRows := slice }}
       {{ range $thisFacets }}
@@ -116,37 +119,14 @@
         {{ $facet := index $facetMap $facetId }}
         {{ if $facet }}
           {{ range $facet.rows }}
-            {{ $srcPid := string .principle }}
-            {{ $rowId := .id }}
-            {{ $key := printf "%s:%s" $srcPid $rowId }}
-            {{ if not (in $seenKeys $key) }}
-              {{ $seenKeys = $seenKeys | append $key }}
-              {{ $srcEntry := index $principleById $srcPid }}
-              {{ if $srcEntry }}
-                {{/* Load the source principle's JSON to get the row (always from principles) */}}
-                {{ $srcRes := resources.Get (printf "data/principles/%s/%s.json" $srcEntry.company $srcEntry.slug) }}
-                {{ if $srcRes }}
-                  {{ $srcLp := $srcRes | transform.Unmarshal }}
-                  {{ $srcCompanyName := index $companyNames $srcEntry.company }}
-                  {{ range $srcLp.rows }}
-                    {{ if eq .id $rowId }}
-                      {{ $rowWithSource := merge . (dict "_sourceCompany" $srcEntry.company "_sourceCompanyName" $srcCompanyName "_sourcePid" $srcPid) }}
-                      {{ $mergedRows = $mergedRows | append $rowWithSource }}
-                    {{ end }}
-                  {{ end }}
-                {{ end }}
+            {{ if and .under (not .principle) }}
+              {{ $key := printf "generated:%s:%s" $facetId .id }}
+              {{ if not (in $seenKeys $key) }}
+                {{ $seenKeys = $seenKeys | append $key }}
+                {{ $mergedRows = $mergedRows | append . }}
               {{ end }}
             {{ end }}
           {{ end }}
-        {{ end }}
-      {{ end }}
-      {{/* Add local rows not already in merged set, using numeric id from index */}}
-      {{ $localPid := string $thisNumericId }}
-      {{ range $lp.rows }}
-        {{ $key := printf "%s:%s" $localPid .id }}
-        {{ if not (in $seenKeys $key) }}
-          {{ $seenKeys = $seenKeys | append $key }}
-          {{ $mergedRows = $mergedRows | append . }}
         {{ end }}
       {{ end }}
       <div class="lps-table-wrap">
@@ -161,14 +141,8 @@
           </thead>
           <tbody>
             {{ range $mergedRows }}
-              {{ $isQuoted := eq .words "quoted" }}
-              <tr{{ if $isQuoted }} class="lps-row-shared"{{ end }}>
-                <th scope="row">
-                  {{ .situation }}
-                  {{ if $isQuoted }}
-                    <span class="lps-row-source">quoted</span>
-                  {{ end }}
-                </th>
+              <tr>
+                <th scope="row">{{ .situation }}</th>
                 <td data-label="Under">{{ partial "lp-tokens.html" (dict "text" .under "principles" $principles "company" $company) }}</td>
                 <td data-label="Just Right">{{ partial "lp-tokens.html" (dict "text" .justRight "principles" $principles "company" $company) }}</td>
                 <td data-label="Over">{{ partial "lp-tokens.html" (dict "text" .over "principles" $principles "company" $company) }}</td>

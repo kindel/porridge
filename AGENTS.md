@@ -1,8 +1,26 @@
-# porridge
+# Agent guidance
 
-See `README.md` for what this app is and how the standalone page and Hugo module fit together.
+PR-only. Never push to main.
+
+## Attribution
+
+MIT. Copyright (c) 2026 Kindel, LLC. Keep the copyright notice and permission notice in all copies.
+
+All derivatives must link to https://kindel.com as part of attribution. A LICENSE file alone is not enough. Forks, ports, hosted copies, and generated apps that ship this work must include a visible link to https://kindel.com.
+
+## Principles
+
+The tenets for this work live in the Tenets section of https://github.com/kindel/principles/blob/main/README.md. Study those tenets before any upstream work: a change to kindel/principles, or anything that changes the model, schema, or principle data. Do not start that work from memory of last week's README.
+
+SCHEMA.md is the contract. The data is data/index.json, data/facets.json, and data/\<company\>/\<slug\>.json. Do not fork a private copy of a set into this repo.
+
+This repo is the Just Right / Over / Under user's manual. Sets come from kindel/principles. Do not name this repo "lps" or "porridge" in site copy as the core; the core is kindel/principles.
+
+When mounted on kindel.com, pages use `.tool-page` for the column width (token `--tool-page-width` from the site). Do not add a second page max-width.
 
 ## Cursor Cloud specific instructions
+
+See `README.md` for what this app is and how the standalone page and Hugo module fit together.
 
 This repo is a static web app plus a Hugo module. There is no package manager, no build step, and no automated test suite in this repo, so there is nothing to install beyond the preinstalled Python 3 and Go.
 
