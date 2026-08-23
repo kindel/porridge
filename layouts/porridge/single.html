@@ -10,10 +10,13 @@
   {{ range $pidx.companies }}
     {{ if eq .id $company }}{{ $principles = .principles }}{{ end }}
   {{ end }}
-  {{ $home := "/porridge/" }}
-  {{ if ne $company "amazon" }}{{ $home = printf "/porridge/?c=%s" $company }}{{ end }}
+  {{ $home := "/kld/apps/porridge/" }}
+  {{ if ne $company "amazon" }}{{ $home = printf "/kld/apps/porridge/?c=%s" $company }}{{ end }}
   <header class="kld-subhero" style="background-image: linear-gradient(90deg, rgba(17, 24, 39, 0.94) 0%, rgba(17, 24, 39, 0.78) 46%, rgba(17, 24, 39, 0.25) 100%), url('/images/porridge-hero.jpg');">
     {{ partial "site-navigation.html" . }}
+    <nav class="porridge-apps-nav" aria-label="App navigation">
+      <a href="/kld/apps/" class="kld-button porridge-apps-link">Apps</a>
+    </nav>
     <div class="kld-subhero-inner">
       <p class="kld-eyebrow"><a href="{{ $home }}">Porridge</a>{{ with $lp.group }} · {{ if eq . "one-arm" }}One Arm{{ else if eq . "accelerate-impact" }}Accelerate Impact{{ else }}{{ . }}{{ end }}{{ end }}</p>
       <h1>{{ $lp.name }}</h1>
@@ -40,8 +43,8 @@
   {{ range $pidx.companies }}
     {{ if eq .id $company }}{{ $principles = .principles }}{{ end }}
   {{ end }}
-  {{ $home := "/porridge/" }}
-  {{ if ne $company "amazon" }}{{ $home = printf "/porridge/?c=%s" $company }}{{ end }}
+  {{ $home := "/kld/apps/porridge/" }}
+  {{ if ne $company "amazon" }}{{ $home = printf "/kld/apps/porridge/?c=%s" $company }}{{ end }}
   {{ $i := 0 }}
   {{ range $idxN, $p := $principles }}
     {{ if eq $p.slug $slug }}{{ $i = $idxN }}{{ end }}
@@ -56,7 +59,7 @@
       <ol>
         {{ range $principles }}
           <li{{ if eq .slug $slug }} class="is-current"{{ end }}>
-            <a href="{{ printf "/porridge/%s/%s/" $company .slug }}"{{ if eq .slug $slug }} aria-current="page"{{ end }}>{{ .name }}</a>
+            <a href="{{ printf "/kld/apps/porridge/%s/%s/" $company .slug }}"{{ if eq .slug $slug }} aria-current="page"{{ end }}>{{ .name }}</a>
           </li>
         {{ end }}
       </ol>
@@ -228,7 +231,7 @@
             {{ if eq .slug $rel.id }}{{ $relName = .name }}{{ end }}
           {{ end }}
           <li>
-            <a href="{{ printf "/porridge/%s/%s/" $company $rel.id }}">{{ $relName }}</a>
+            <a href="{{ printf "/kld/apps/porridge/%s/%s/" $company $rel.id }}">{{ $relName }}</a>
             {{ with $rel.note }}<p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles "company" $company) }}</p>{{ end }}
           </li>
         {{ end }}
@@ -238,13 +241,13 @@
 
     <nav class="lps-pager" aria-label="Previous and next principle">
       {{ with $prev }}
-        <a class="lps-pager-prev" href="{{ printf "/porridge/%s/%s/" $company .slug }}"><span>Previous</span>{{ .name }}</a>
+        <a class="lps-pager-prev" href="{{ printf "/kld/apps/porridge/%s/%s/" $company .slug }}"><span>Previous</span>{{ .name }}</a>
       {{ else }}
         <span class="lps-pager-prev is-empty"></span>
       {{ end }}
       <a class="lps-pager-index" href="{{ $home }}">All principles</a>
       {{ with $next }}
-        <a class="lps-pager-next" href="{{ printf "/porridge/%s/%s/" $company .slug }}"><span>Next</span>{{ .name }}</a>
+        <a class="lps-pager-next" href="{{ printf "/kld/apps/porridge/%s/%s/" $company .slug }}"><span>Next</span>{{ .name }}</a>
       {{ else }}
         <span class="lps-pager-next is-empty"></span>
       {{ end }}
