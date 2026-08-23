@@ -2,13 +2,13 @@
 
 Just Right, Over, Under. A user's manual for living a company's principles.
 
-Live: [https://kindel.com/porridge/](https://kindel.com/porridge/). Amazon is the default. Arm is [https://kindel.com/porridge/?c=arm](https://kindel.com/porridge/?c=arm).
+Live: [https://kindel.com/kld/apps/porridge/](https://kindel.com/kld/apps/porridge/). Amazon is the default. Arm is [https://kindel.com/kld/apps/porridge/?c=arm](https://kindel.com/kld/apps/porridge/?c=arm).
 
 The sets come from [`kindel/principles`](https://github.com/kindel/principles): Amazon, Arm, Coupang, Delivery Hero, and GitLab. This repo is the app. Teaching prose for Amazon still comes from [`kindel/biq`](https://github.com/kindel/biq) `data/lps/`. Every other company is definition plus calibration rows.
 
 `data/lps/` is an Amazon-only copy, so it is only ever consulted when the company is `amazon`. Asking it for another company's id returns Amazon's prose under someone else's name.
 
-`/lps/` is an alias on kindel.com, not a second app.
+The `/lps/` alias was removed. Only BIQ keeps a root alias on kindel.com.
 
 ## Run
 
@@ -34,9 +34,9 @@ The standalone page fetches `kindel/principles` from jsDelivr. A host that alrea
 
 ## URLs
 
-Single pages are `/porridge/<company>/<id>/`. The company has to be in the path because ids are only unique within a company: `dive-deep` belongs to Amazon, Coupang, and Delivery Hero, and `own-it` to both Arm and Delivery Hero.
+Single pages are `/kld/apps/porridge/<company>/<id>/`. The company has to be in the path because ids are only unique within a company: `dive-deep` belongs to Amazon, Coupang, and Delivery Hero, and `own-it` to both Arm and Delivery Hero.
 
-Every pre-existing flat URL is kept as an alias, so `/porridge/dive-deep/` redirects to `/porridge/amazon/dive-deep/`.
+Every pre-existing flat URL is kept as an alias, so `/kld/apps/porridge/dive-deep/` redirects to `/kld/apps/porridge/amazon/dive-deep/`.
 
 The standalone page addresses the same content with query parameters, `?c=<company>&p=<id>`, and needs no path scheme.
 
