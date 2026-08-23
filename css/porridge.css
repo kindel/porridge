@@ -467,28 +467,3 @@
   letter-spacing: 0.02em;
   margin-top: 0.35rem;
 }
-
-.porridge-apps-nav {
-  max-width: var(--tool-page-width, 1180px);
-  margin: 0 auto;
-  padding: 0.5rem var(--tool-page-pad, 1.25rem);
-}
-
-.porridge-apps-link {
-  display: inline-block;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 4px;
-  text-decoration: none;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.porridge-apps-link:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
-  color: #fff;
-}
