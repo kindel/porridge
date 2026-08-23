@@ -14,13 +14,13 @@
   {{ if ne $company "amazon" }}{{ $home = printf "/kld/apps/porridge/?c=%s" $company }}{{ end }}
   <header class="kld-subhero" style="background-image: linear-gradient(90deg, rgba(17, 24, 39, 0.94) 0%, rgba(17, 24, 39, 0.78) 46%, rgba(17, 24, 39, 0.25) 100%), url('/images/porridge-hero.jpg');">
     {{ partial "site-navigation.html" . }}
-    <nav class="porridge-apps-nav" aria-label="App navigation">
-      <a href="/kld/apps/" class="kld-button porridge-apps-link">All The Apps</a>
-    </nav>
     <div class="kld-subhero-inner">
       <p class="kld-eyebrow"><a href="{{ $home }}">Porridge</a>{{ with $lp.group }} · {{ if eq . "one-arm" }}One Arm{{ else if eq . "accelerate-impact" }}Accelerate Impact{{ else }}{{ . }}{{ end }}{{ end }}</p>
       <h1>{{ $lp.name }}</h1>
       <p>{{ partial "lp-tokens.html" (dict "text" $lp.definition "principles" $principles "company" $company) }}</p>
+      <div class="kld-hero-actions">
+        <a class="kld-button kld-button-secondary" href="/kld/apps/">All The Apps</a>
+      </div>
     </div>
   </header>
 {{ end }}
