@@ -36,7 +36,7 @@ The standalone page fetches `kindel/principles` from jsDelivr. A host that alrea
 
 Single pages are `/kld/apps/porridge/<company>/<id>/`. The company has to be in the path because ids are only unique within a company: `dive-deep` belongs to Amazon, Coupang, and Delivery Hero, and `own-it` to both Arm and Delivery Hero.
 
-Every pre-existing flat URL is kept as an alias, so `/kld/apps/porridge/dive-deep/` redirects to `/kld/apps/porridge/amazon/dive-deep/`.
+Every pre-existing flat URL is kept as an alias, so `/porridge/dive-deep/` redirects to `/kld/apps/porridge/amazon/dive-deep/`.
 
 The standalone page addresses the same content with query parameters, `?c=<company>&p=<id>`, and needs no path scheme.
 
