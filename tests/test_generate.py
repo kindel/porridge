@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
 
 from generate import (N_ROWS, classify_facet, is_complete_set, needs_generation,
                       parse_rows, row_words, split_facet_rows, stamp,
-                      style_examples)
+                      style_examples, system_prompt)
 
 
 def rec(pid, company, rows):
@@ -149,6 +149,28 @@ class StampTest(unittest.TestCase):
         self.assertTrue(is_complete_set(rows))
         facet = {"id": "full", "rows": rows}
         self.assertFalse(needs_generation(facet, {}))
+
+
+class SystemPromptContrastTest(unittest.TestCase):
+    """The prompt must force a three-way contrast a reader can grade at a glance."""
+
+    def setUp(self):
+        self.prompt = system_prompt()
+
+    def test_under_is_neglect_of_the_behavior_not_generic_badness(self):
+        self.assertIn("neglect of this behavior itself", self.prompt)
+        self.assertIn("not generic badness", self.prompt)
+
+    def test_over_is_the_same_behavior_taken_too_far_with_a_named_cost(self):
+        self.assertIn("the same behavior taken too far", self.prompt)
+        self.assertIn("a real cost someone pays", self.prompt)
+
+    def test_under_and_over_read_against_the_same_situation(self):
+        self.assertIn("the same situation", self.prompt)
+        self.assertIn("graded comparison", self.prompt)
+
+    def test_just_right_stays_a_named_tradeoff(self):
+        self.assertIn("a named tradeoff, not a slogan", self.prompt)
 
 
 if __name__ == "__main__":
