@@ -11,6 +11,9 @@ Rules:
 - `under`, `justRight`, and `over` are one to three sentences each.
 - No em dash, no en dash, no `---`. Oxford commas. Numbers under 10 spelled out.
 - Do not invent metrics, heroics, or cartoon extremes.
+- `under` is neglect of this behavior itself, an absence a reader would recognize, not generic badness.
+- `over` is the same behavior taken too far, and it names a real cost someone pays.
+- Write all three cells against the same situation, so the row reads as a graded comparison: too little, right, too much of one behavior.
 - Just right is the hard one: a named tradeoff, not a slogan.
 
 Return JSON only. No markdown. No fence.
