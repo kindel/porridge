@@ -40,8 +40,14 @@
     {{ if $teachRes }}{{ $teach = $teachRes | transform.Unmarshal }}{{ end }}
   {{ end }}
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
+  {{ $companyName := $company }}
+  {{ $companySource := "" }}
   {{ range $pidx.companies }}
-    {{ if eq .id $company }}{{ $principles = .principles }}{{ end }}
+    {{ if eq .id $company }}
+      {{ $principles = .principles }}
+      {{ $companyName = .name }}
+      {{ with .source }}{{ $companySource = . }}{{ end }}
+    {{ end }}
   {{ end }}
   {{ $home := "/kld/apps/porridge/" }}
   {{ if ne $company "amazon" }}{{ $home = printf "/kld/apps/porridge/?c=%s" $company }}{{ end }}
@@ -132,6 +138,20 @@
           {{ end }}
         {{ end }}
       {{ end }}
+      {{/* No generated rows: say so, never an empty table. SCHEMA.md forbids
+           falling back to the record's human rows or the facet's refs. */}}
+      {{ if not $mergedRows }}
+        <p class="lps-cal-empty">
+          {{ if $thisFacets }}
+            The calibration table for {{ $lp.name }} has not been generated yet.
+          {{ else }}
+            Porridge builds its tables from facets, behaviors that line up across companies' sets. {{ $lp.name }} is not mapped to a facet yet, so there is no table for it.
+          {{ end }}
+          {{ if hasPrefix $companySource "http" }}
+            Read it in <a href="{{ $companySource }}">{{ $companyName }}'s own words</a>.
+          {{ end }}
+        </p>
+      {{ else }}
       <div class="lps-table-wrap">
         <table class="lps-table">
           <thead>
@@ -154,6 +174,7 @@
           </tbody>
         </table>
       </div>
+      {{ end }}
     </section>
 
     {{ with $teach.examples }}
@@ -252,5 +273,8 @@
         <span class="lps-pager-next is-empty"></span>
       {{ end }}
     </nav>
+    {{ if templates.Exists "partials/app-feedback.html" }}
+      {{ partial "app-feedback.html" (dict "app" "porridge" "repo" "https://github.com/kindel/porridge") }}
+    {{ end }}
   </article>
 {{ end }}

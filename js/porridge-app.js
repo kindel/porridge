@@ -120,6 +120,23 @@
         "<td data-label=\"Just Right\">" + expandLp(r.justRight, principles, companyId) + "</td>" +
         "<td data-label=\"Over\">" + expandLp(r.over, principles, companyId) + "</td></tr>";
     }).join("");
+    // No generated rows: say so, never an empty table. SCHEMA.md forbids
+    // falling back to the record's human rows or the facet's refs.
+    var calBody;
+    if (mergedRows.length) {
+      calBody = "<div class=\"lps-table-wrap\"><table class=\"lps-table\"><thead><tr>" +
+        "<th scope=\"col\">Situation</th><th scope=\"col\">Under</th><th scope=\"col\">Just Right</th><th scope=\"col\">Over</th>" +
+        "</tr></thead><tbody>" + rows + "</tbody></table></div>";
+    } else {
+      var why = thisFacets.length
+        ? "The calibration table for " + esc(rec.name) + " has not been generated yet."
+        : "Porridge builds its tables from facets, behaviors that line up across companies' sets. " +
+          esc(rec.name) + " is not mapped to a facet yet, so there is no table for it.";
+      var src = /^https?:/.test(co.source || "")
+        ? " Read it in <a href=\"" + esc(co.source) + "\">" + esc(co.name) + "'s own words</a>."
+        : "";
+      calBody = "<p class=\"lps-cal-empty\">" + why + src + "</p>";
+    }
     var jump = principles.map(function (p) {
       var q = "?p=" + encodeURIComponent(p.slug) + (companyId === def ? "" : "&c=" + encodeURIComponent(companyId));
       var cur = p.slug === slug ? " class=\"is-current\"" : "";
@@ -212,9 +229,7 @@
       "<section class=\"lps-section\" aria-labelledby=\"lps-cal-title\"><p class=\"kld-section-label\">Calibration</p>" +
       "<h2 id=\"lps-cal-title\">Under, just right, over.</h2>" +
       calIntro +
-      "<div class=\"lps-table-wrap\"><table class=\"lps-table\"><thead><tr>" +
-      "<th scope=\"col\">Situation</th><th scope=\"col\">Under</th><th scope=\"col\">Just Right</th><th scope=\"col\">Over</th>" +
-      "</tr></thead><tbody>" + rows + "</tbody></table></div></section>" +
+      calBody + "</section>" +
       afterCal;
   }
 

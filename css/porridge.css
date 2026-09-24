@@ -160,6 +160,17 @@
   text-underline-offset: 0.12em;
 }
 
+.lps-cal-empty {
+  margin-top: 1.4rem;
+  padding: 1rem 1.2rem;
+  border-left: 3px solid var(--kld-sage, #dce7dc);
+  background: var(--kld-wash, #f4f6f3);
+  color: var(--kld-muted);
+  font-size: 1.06rem;
+  line-height: 1.62;
+  max-width: 42rem;
+}
+
 .lps-table-wrap {
   margin-top: 1.4rem;
   overflow-x: auto;
