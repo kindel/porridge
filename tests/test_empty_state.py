@@ -28,11 +28,18 @@ class EmptyStateTest(unittest.TestCase):
         guard = s.find("{{ if not $mergedRows }}")
         self.assertGreater(guard, -1, "single.html must branch on $mergedRows")
         empty = s.find('class="lps-cal-empty"', guard)
-        table = s.find('<table class="lps-table">', guard)
-        orelse = s.find("{{ else }}", empty)
-        self.assertTrue(guard < empty < orelse < table,
-                        "empty state must come before the table, which "
-                        "sits in the else branch")
+        self.assertGreater(empty, guard, "empty state must follow the guard")
+        # The outer else closes the empty-state <p> and opens the table.
+        # Anchor on that boundary so a nested else inside the <p> cannot
+        # satisfy the check.
+        branch = re.compile(r'</p>\s*\{\{ else \}\}\s*'
+                            r'<div class="lps-table-wrap">\s*'
+                            r'<table class="lps-table">')
+        m = branch.search(s, empty)
+        self.assertIsNotNone(m, "the table must open the else branch that "
+                             "follows the empty-state paragraph")
+        self.assertEqual(s.count('<table class="lps-table">'), 1,
+                         "one table, inside the guard")
 
     def test_standalone_guards_the_table(self):
         s = read("js", "porridge-app.js")
