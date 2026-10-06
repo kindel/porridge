@@ -38,9 +38,14 @@ KEBAB = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 # words; this list is the check. A row that trips it is dropped like any
 # other malformed row, so keep the list to phrases that are never the
 # right word in a row. "Slide deck" is fine; "the slide" is not.
+# "Package" and "artifact" are only stand-ins when a determiner or
+# possessive points straight at them ("the package", "the other team's
+# artifacts"). With a real noun in front ("software package", "build
+# artifacts") they name a concrete thing, so they pass.
+_POINTER = r"(?:the|a|an|this|that|these|those|their|its|our|your|his|her|[a-z]+'s)"
 PLAIN_WORDS = [re.compile(p, re.IGNORECASE) for p in (
-    r"\bpackages?\b",
-    r"\bartifacts?\b",
+    r"\b" + _POINTER + r"\s+packages?\b",
+    r"\b" + _POINTER + r"\s+artifacts?\b",
     r"\b(?:the|an|this)\s+ask\b",
     r"\bthe\s+slide\b(?!\s+deck)",
     r"\b(?:the|an?)\s+(?:quick\s+)?approve\b",

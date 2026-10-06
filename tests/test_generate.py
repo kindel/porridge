@@ -135,6 +135,7 @@ class StampTest(unittest.TestCase):
             dict(base, id="slide", under="Accepts the slide."),
             dict(base, id="ask", justRight="Makes a specific request, not the ask."),
             dict(base, id="artifacts", under="Never opens the artifacts."),
+            dict(base, id="team-package", over="Rewrites the other team's package."),
             dict(base, id="approve", over="Holds the quick approve overnight."),
         ]
         rows = stamp([dict(base, id="plain")] + bad)
@@ -143,7 +144,10 @@ class StampTest(unittest.TestCase):
     def test_plain_words_allow_the_real_nouns(self):
         for text in ("Reads the slide deck before the review.",
                      "Asks for approval the same day.",
-                     "Opens the design doc, the handoff notes, and the tickets."):
+                     "Opens the design doc, the handoff notes, and the tickets.",
+                     "Picks a software package the team already knows.",
+                     "Negotiates the compensation package before the offer goes out.",
+                     "Keeps the build artifacts for the release."):
             self.assertIsNone(not_plain(text), text)
 
     def test_parse_rows_accepts_fenced_json(self):
