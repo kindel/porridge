@@ -23,7 +23,7 @@
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
   {{ $default := "" }}
   {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
-  {{/* lps index is Amazon-only and optional; used only for blog links */}}
+  {{/* lps index is Amazon-only and optional; used only for the Further reading list */}}
   {{ $lpsIdxRes := resources.Get "data/lps/index.json" }}
   {{ $lpsIdx := dict }}
   {{ if $lpsIdxRes }}{{ $lpsIdx = $lpsIdxRes | transform.Unmarshal }}{{ end }}
@@ -69,11 +69,11 @@
         </ol>
       </section>
     {{ end }}
-    {{/* Blog links from lps index are Amazon-only */}}
+    {{/* Further reading from lps index is Amazon-only */}}
     {{ if and (eq $default "amazon") $lpsIdx.blog }}
     <section class="lps-section" data-company-set="amazon" aria-labelledby="lps-blog-title">
-      <p class="kld-section-label">From the blog</p>
-      <h2 id="lps-blog-title">Writing that goes with the set.</h2>
+      <p class="kld-section-label">Further reading</p>
+      <h2 id="lps-blog-title">Sources and essays on the whole set.</h2>
       <ul class="lps-blog">
         {{ range $lpsIdx.blog }}
           <li>

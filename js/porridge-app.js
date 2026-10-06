@@ -197,8 +197,8 @@
     }
     if (teach && teach.blog && teach.blog.length) {
       afterCal += "<section class=\"lps-section\" aria-labelledby=\"lps-blog-title\">" +
-        "<p class=\"kld-section-label\">From the blog</p>" +
-        "<h2 id=\"lps-blog-title\">Writing that goes deeper.</h2>" +
+        "<p class=\"kld-section-label\">Further reading</p>" +
+        "<h2 id=\"lps-blog-title\">Sources and essays on this principle.</h2>" +
         "<ul class=\"lps-blog\">" +
         teach.blog.map(function (item) {
           var note = item.note ? "<p>" + esc(item.note) + "</p>" : "";
