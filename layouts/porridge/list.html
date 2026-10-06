@@ -52,7 +52,7 @@
       {{ end }}
     </section>
     {{ if $frame }}
-      {{ partial "app-kit/frame-start.html" (dict "card" $card) }}
+      {{ partial "app-kit/frame-start.html" (dict "card" $card "page" $) }}
       <label class="lps-company-label" id="lps-company-label" for="lps-company">Company</label>
       <select id="lps-company" class="lps-select" aria-labelledby="lps-company-label">
         {{ range $pidx.companies }}

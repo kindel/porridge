@@ -88,7 +88,7 @@
     {{ $card := index .Site.Data.tools "porridge" }}
     {{ $frame := and $card (templates.Exists "partials/app-kit/frame-start.html") }}
     {{ if $frame }}
-      {{ partial "app-kit/frame-start.html" (dict "card" $card "nameHref" $home) }}
+      {{ partial "app-kit/frame-start.html" (dict "card" $card "page" $ "nameHref" $home) }}
     {{ end }}
     <nav class="lps-jump" aria-label="All principles">
       <ol>
