@@ -33,14 +33,15 @@
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
-  // Host shown under a Further reading note. new URL().hostname, then drop
-  // one leading "www." so www.aboutamazon.com shows as aboutamazon.com and
-  // blog.kindel.com stays blog.kindel.com.
+  // Root domain under a Further reading note: last two hostname labels.
+  // Fine for this data. A multi-part public suffix (co.uk, com.au) would
+  // need a real suffix list; none of these hosts have one.
   function readingHost(url) {
     var host = "";
     try { host = new URL(url).hostname; }
     catch (e) { return ""; }
-    if (host.indexOf("www.") === 0) host = host.slice(4);
+    var parts = host.split(".");
+    if (parts.length >= 2) host = parts.slice(-2).join(".");
     return host;
   }
   function groupLabel(g) {
