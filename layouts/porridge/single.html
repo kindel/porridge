@@ -33,11 +33,12 @@
   {{ $lpRes := resources.Get (printf "data/principles/%s/%s.json" $company $slug) }}
   {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $company $slug }}{{ end }}
   {{ $lp := $lpRes | transform.Unmarshal }}
-  {{/* For Amazon only, load teaching fields from lps */}}
+  {{/* Amazon teaching lives in principles. Other companies are definition plus rows. */}}
   {{ $teach := dict }}
   {{ if eq $company "amazon" }}
-    {{ $teachRes := resources.Get (printf "data/lps/%s.json" $slug) }}
-    {{ if $teachRes }}{{ $teach = $teachRes | transform.Unmarshal }}{{ end }}
+    {{ $teachRes := resources.Get (printf "data/principles/teaching/amazon/%s.json" $slug) }}
+    {{ if not $teachRes }}{{ errorf "missing Amazon teaching for %s" $slug }}{{ end }}
+    {{ $teach = $teachRes | transform.Unmarshal }}
   {{ end }}
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
   {{ $companyName := $company }}

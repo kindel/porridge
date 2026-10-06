@@ -3,7 +3,7 @@
   var INDEX = cfg.principlesIndex || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/index.json";
   var RECORD = cfg.principlesRecord || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/{company}/{slug}.json";
   var FACETS = cfg.facetsJson || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/facets.json";
-  var TEACH = cfg.teaching || "https://cdn.jsdelivr.net/gh/kindel/biq@main/data/lps/{slug}.json";
+  var TEACH = cfg.teaching || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/teaching/amazon/{slug}.json";
   var TENSION_URL = "https://blog.kindel.com/2019/05/16/the-tension-is-intentional/";
   var root = document.getElementById("porridge-root");
   if (!root) return;
@@ -24,8 +24,8 @@
     return RECORD.replace("{company}", company).replace("{slug}", slug);
   }
   function teachUrl(company, slug) {
-    // data/lps in kindel/biq is an Amazon-only copy. Asking it for another
-    // company's slug returns Amazon's prose under that company's name.
+    // Teaching prose is Amazon-only and lives in principles
+    // data/teaching/amazon. Do not fetch it for another company.
     if (company !== "amazon") return "";
     return TEACH.replace("{slug}", slug);
   }
