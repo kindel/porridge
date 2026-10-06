@@ -1,0 +1,2 @@
+{{- $host := (urls.Parse .).Host -}}
+{{- strings.TrimPrefix "www." $host -}}

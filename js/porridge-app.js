@@ -33,6 +33,16 @@
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
+  // Host shown under a Further reading note. new URL().hostname, then drop
+  // one leading "www." so www.aboutamazon.com shows as aboutamazon.com and
+  // blog.kindel.com stays blog.kindel.com.
+  function readingHost(url) {
+    var host = "";
+    try { host = new URL(url).hostname; }
+    catch (e) { return ""; }
+    if (host.indexOf("www.") === 0) host = host.slice(4);
+    return host;
+  }
   function groupLabel(g) {
     if (!g) return "";
     return g.replace(/-/g, " ");
@@ -202,7 +212,9 @@
         "<ul class=\"lps-blog\">" +
         teach.blog.map(function (item) {
           var note = item.note ? "<p>" + esc(item.note) + "</p>" : "";
-          return "<li><a href=\"" + esc(item.url) + "\">" + esc(item.title) + "</a>" + note + "</li>";
+          var host = readingHost(item.url);
+          var domain = host ? "<p class=\"lps-blog-domain\">" + esc(host) + "</p>" : "";
+          return "<li><a href=\"" + esc(item.url) + "\">" + esc(item.title) + "</a>" + note + domain + "</li>";
         }).join("") +
         "</ul></section>";
     }

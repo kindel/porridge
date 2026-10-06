@@ -420,6 +420,12 @@
   margin: 0.35rem 0 0;
 }
 
+.lps-blog p.lps-blog-domain {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  margin: 0.28rem 0 0;
+}
+
 .lps-company-label {
   display: block;
   margin: 1.5rem 0 0.5rem;

@@ -79,6 +79,8 @@
           <li>
             <a href="{{ .url }}">{{ .title }}</a>
             {{ with .note }}<p>{{ . }}</p>{{ end }}
+            {{ $host := partial "reading-host.html" .url }}
+            {{ with $host }}<p class="lps-blog-domain">{{ . }}</p>{{ end }}
           </li>
         {{ end }}
       </ul>
