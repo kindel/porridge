@@ -73,7 +73,7 @@
       "<section class=\"lps-intro\">" +
       "<p class=\"kld-section-label\">How to use it</p>" +
       "<h2>Get the balance right.</h2>" +
-      "<p>A great way to be thoughtful about this is to apply a Just Right, Over, Under taxonomy. Pick the row that matches what happened.</p>" +
+      "<p>Porridge is a teaching tool. Pick the company whose principles fit you, then pick a principle. You get a deep dive on that principle you can learn from.</p>" +
       "<label class=\"lps-company-label\" for=\"lps-company\">Company</label>" +
       "<select id=\"lps-company\" class=\"lps-select\">" + opts + "</select>" +
       "</section>" +
