@@ -1,9 +1,19 @@
-principles 94acbd2ba11ab0e5ee1fbcd2e1f1cab853f3daf2
+principles 6035e88870aa891928f106e11f37e3783bc7d4d0
 
 added:
-  toyota/_index.md
-  toyota/challenge.md
-  toyota/kaizen.md
-  toyota/genchi-genbutsu.md
-  toyota/respect.md
-  toyota/teamwork.md
+  generic/_index.md
+  generic/customer-obsession.md
+  generic/earn-trust.md
+  generic/ownership.md
+  generic/are-right-a-lot.md
+  generic/learn-and-be-curious.md
+  generic/invent-and-simplify.md
+  generic/insist-on-high-standards.md
+  generic/hire-and-develop-the-best.md
+  generic/think-big.md
+  generic/bias-for-action.md
+  generic/frugality.md
+  generic/dive-deep.md
+  generic/have-backbone-disagree-and-commit.md
+  generic/deliver-results.md
+  generic/intentional-about-culture.md

@@ -24,8 +24,10 @@
   {{ $default := "" }}
   {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
   {{/* Set-level Further reading is Amazon-only, from principles teaching. */}}
+  {{ $hasAmazon := false }}
+  {{ range $pidx.companies }}{{ if eq .id "amazon" }}{{ $hasAmazon = true }}{{ end }}{{ end }}
   {{ $teachIdxRes := resources.Get "data/principles/teaching/amazon/index.json" }}
-  {{ if and (eq $default "amazon") (not $teachIdxRes) }}{{ errorf "missing data/principles/teaching/amazon/index.json" }}{{ end }}
+  {{ if and $hasAmazon (not $teachIdxRes) }}{{ errorf "missing data/principles/teaching/amazon/index.json" }}{{ end }}
   {{ $teachIdx := dict }}
   {{ if $teachIdxRes }}{{ $teachIdx = $teachIdxRes | transform.Unmarshal }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
@@ -51,6 +53,9 @@
       <section class="lps-index" data-company-set="{{ $co.id }}"{{ if ne $co.id $default }} hidden{{ end }} aria-labelledby="{{ printf "lps-list-%s" $co.id }}">
         <p class="kld-section-label">The set</p>
         <h2 id="{{ printf "lps-list-%s" $co.id }}">{{ $co.set }}, in teaching order.</h2>
+        {{ with $co.preamble }}
+          <div class="lps-preamble">{{ . | markdownify }}</div>
+        {{ end }}
         <ol class="lps-card-list">
           {{ range $co.principles }}
             {{ $lpRes := resources.Get (printf "data/principles/%s/%s.json" $co.id .slug) }}
@@ -71,8 +76,8 @@
       </section>
     {{ end }}
     {{/* Further reading from the teaching index is Amazon-only */}}
-    {{ if and (eq $default "amazon") $teachIdx.blog }}
-    <section class="lps-section" data-company-set="amazon" aria-labelledby="lps-blog-title">
+    {{ if $teachIdx.blog }}
+    <section class="lps-section" data-company-set="amazon"{{ if ne $default "amazon" }} hidden{{ end }} aria-labelledby="lps-blog-title">
       <p class="kld-section-label">Further reading</p>
       <h2 id="lps-blog-title">Sources and essays on the whole set.</h2>
       <ul class="lps-blog">

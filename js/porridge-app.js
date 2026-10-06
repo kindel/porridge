@@ -29,6 +29,13 @@
     if (company !== "amazon") return "";
     return TEACH.replace("{slug}", slug);
   }
+  // Emphasis only. Escape first so the preamble cannot inject markup.
+  function inlineMd(md) {
+    var s = esc(md || "");
+    s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    s = s.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+    return s;
+  }
   function esc(s) {
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -91,6 +98,7 @@
       "<section class=\"lps-index\">" +
       "<p class=\"kld-section-label\">The set</p>" +
       "<h2>" + esc(co.set) + ", in teaching order.</h2>" +
+      (co.preamble ? "<div class=\"lps-preamble\"><p>" + inlineMd(co.preamble) + "</p></div>" : "") +
       "<ol class=\"lps-card-list\">" + cards + "</ol></section>" +
       "<p class=\"lps-add-note\">To add another company's set, <a href=\"https://github.com/kindel/principles/issues/new\">open an issue on kindel/principles</a>.</p>";
     document.getElementById("lps-company").addEventListener("change", function () {

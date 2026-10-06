@@ -2,7 +2,7 @@
   var sel = document.getElementById("lps-company");
 
   function defaultId() {
-    return (sel && sel.options.length && sel.options[0].value) || "amazon";
+    return (sel && sel.options.length && sel.options[0].value) || "";
   }
 
   function known(id) {

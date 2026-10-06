@@ -61,11 +61,17 @@
 .lps-intro p,
 .lps-section > p,
 .lps-cal-intro,
-.lps-rel-intro {
+.lps-rel-intro,
+.lps-preamble,
+.lps-preamble p {
   color: var(--kld-muted);
   font-size: 1.06rem;
   line-height: 1.62;
   max-width: 42rem;
+}
+
+.lps-preamble p {
+  margin: 0 0 1rem;
 }
 
 .lps-card-list {
