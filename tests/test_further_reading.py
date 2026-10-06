@@ -13,8 +13,8 @@ host comes from the URL at render time. A leading www. is dropped.
 
 import os
 import re
-import subprocess
 import unittest
+from urllib.parse import urlparse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -75,7 +75,10 @@ class FurtherReadingTest(unittest.TestCase):
 
         host = read("layouts", "partials", "reading-host.html")
         self.assertIn("urls.Parse", host)
-        self.assertIn(".Host", host)
+        # .Host, not .Hostname. A port is not part of these URLs, and the
+        # requested Hugo call is .Host.
+        self.assertRegex(host, r"\(urls\.Parse \.\)\.Host\b")
+        self.assertNotIn(".Hostname", host)
         self.assertIn('strings.TrimPrefix "www."', host)
 
         js_item = (
@@ -86,57 +89,33 @@ class FurtherReadingTest(unittest.TestCase):
         )
         self.assertIn(js_item, self.app)
         self.assertIn("new URL(url).hostname", self.app)
+        self.assertIn('host.indexOf("www.") === 0', self.app)
+        self.assertIn("host.slice(4)", self.app)
         self.assertNotIn('<a class=\\"lps-blog-domain\\"', self.app)
 
-        # Execute the app's own readingHost. www.aboutamazon.com drops the
-        # prefix; blog.kindel.com does not.
-        script = r"""
-const fs = require("fs");
-const src = fs.readFileSync("js/porridge-app.js", "utf8");
-const m = src.match(/function readingHost\(url\) \{\n[\s\S]*?\n  \}/);
-if (!m) { console.error("readingHost missing"); process.exit(1); }
-eval(m[0]);
-const cases = [
-  ["https://www.aboutamazon.com/news/company-news/amazons-original-1997-letter-to-shareholders", "aboutamazon.com"],
-  ["https://blog.kindel.com/2023/01/08/breaking-down-innovation-invention/", "blog.kindel.com"],
-  ["https://ir.aboutamazon.com/files/doc_financials/annual/2015-Letter-to-Shareholders.PDF", "ir.aboutamazon.com"],
-  ["https://www.sec.gov/Archives/edgar/data/1018724/000119312510082914/dex991.htm", "sec.gov"],
-  ["https://www.amazon.jobs/content/en/our-workplace/leadership-principles", "amazon.jobs"],
-  ["https://us.macmillan.com/books/9781250267597/workingbackwards/", "us.macmillan.com"],
-  ["https://aws.amazon.com/blogs/mt/why-you-should-develop-a-correction-of-error-coe/", "aws.amazon.com"],
-  ["https://signalvnoise.com/svn3/some-advice-from-jeff-bezos/", "signalvnoise.com"]
-];
-function esc(s) {
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}
-for (const [url, want] of cases) {
-  const got = readingHost(url);
-  if (got !== want) {
-    console.error("host", url, got, want);
-    process.exit(2);
-  }
-  const note = "<p>" + esc("A note.") + "</p>";
-  const domain = "<p class=\"lps-blog-domain\">" + esc(got) + "</p>";
-  const html = "<li><a href=\"" + esc(url) + "\">Title</a>" + note + domain + "</li>";
-  const noteAt = html.indexOf("<p>A note.</p>");
-  const domainAt = html.indexOf('<p class="lps-blog-domain">' + want + "</p>");
-  if (noteAt < 0 || domainAt < noteAt) {
-    console.error("order", html);
-    process.exit(3);
-  }
-  if (html.slice(noteAt, domainAt).includes("<a")) {
-    console.error("domain wrapped", html);
-    process.exit(4);
-  }
-}
-"""
-        proc = subprocess.run(
-            ["node", "-e", script],
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
+        # hostname, then one leading www. Python's urllib hostname matches
+        # new URL().hostname for these URLs, including "no port".
+        cases = (
+            ("https://www.aboutamazon.com/news/company-news/amazons-original-1997-letter-to-shareholders", "aboutamazon.com"),
+            ("https://blog.kindel.com/2023/01/08/breaking-down-innovation-invention/", "blog.kindel.com"),
+            ("https://ir.aboutamazon.com/files/doc_financials/annual/2015-Letter-to-Shareholders.PDF", "ir.aboutamazon.com"),
+            ("https://www.sec.gov/Archives/edgar/data/1018724/000119312510082914/dex991.htm", "sec.gov"),
+            ("https://www.amazon.jobs/content/en/our-workplace/leadership-principles", "amazon.jobs"),
+            ("https://us.macmillan.com/books/9781250267597/workingbackwards/", "us.macmillan.com"),
+            ("https://aws.amazon.com/blogs/mt/why-you-should-develop-a-correction-of-error-coe/", "aws.amazon.com"),
+            ("https://signalvnoise.com/svn3/some-advice-from-jeff-bezos/", "signalvnoise.com"),
+            ("https://www.example.com:8443/path", "example.com"),
         )
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        for url, want in cases:
+            parsed = urlparse(url).hostname or ""
+            if parsed.startswith("www."):
+                parsed = parsed[4:]
+            self.assertEqual(parsed, want, url)
+            note = "<p>A note.</p>"
+            domain = '<p class="lps-blog-domain">%s</p>' % want
+            html = '<li><a href="%s">Title</a>%s%s</li>' % (url, note, domain)
+            self.assertLess(html.index(note), html.index(domain), url)
+            self.assertNotIn("<a", html[html.index(note):html.index(domain)], url)
 
 
 if __name__ == "__main__":
