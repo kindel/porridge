@@ -33,6 +33,17 @@
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
+  // Root domain under a Further reading note: last two hostname labels.
+  // Fine for this data. A multi-part public suffix (co.uk, com.au) would
+  // need a real suffix list; none of these hosts have one.
+  function readingHost(url) {
+    var host = "";
+    try { host = new URL(url).hostname; }
+    catch (e) { return ""; }
+    var parts = host.split(".");
+    if (parts.length >= 2) host = parts.slice(-2).join(".");
+    return host;
+  }
   function groupLabel(g) {
     if (!g) return "";
     return g.replace(/-/g, " ");
@@ -202,7 +213,9 @@
         "<ul class=\"lps-blog\">" +
         teach.blog.map(function (item) {
           var note = item.note ? "<p>" + esc(item.note) + "</p>" : "";
-          return "<li><a href=\"" + esc(item.url) + "\">" + esc(item.title) + "</a>" + note + "</li>";
+          var host = readingHost(item.url);
+          var domain = host ? "<p class=\"lps-blog-domain\">" + esc(host) + "</p>" : "";
+          return "<li><a href=\"" + esc(item.url) + "\">" + esc(item.title) + "</a>" + note + domain + "</li>";
         }).join("") +
         "</ul></section>";
     }

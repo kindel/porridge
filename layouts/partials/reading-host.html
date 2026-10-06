@@ -1,0 +1,8 @@
+{{- /* Last two hostname labels. Fine for this data: no multi-part public suffix (co.uk, com.au). */ -}}
+{{- $host := (urls.Parse .).Hostname -}}
+{{- $parts := split $host "." -}}
+{{- if gt (len $parts) 2 -}}
+{{- delimit (last 2 $parts) "." -}}
+{{- else -}}
+{{- $host -}}
+{{- end -}}
