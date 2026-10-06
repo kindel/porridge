@@ -60,7 +60,8 @@
 
 .lps-intro p,
 .lps-section > p,
-.lps-cal-intro {
+.lps-cal-intro,
+.lps-rel-intro {
   color: var(--kld-muted);
   font-size: 1.06rem;
   line-height: 1.62;
