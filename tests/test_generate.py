@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "scripts"))
 
 from generate import (N_ROWS, classify_facet, is_complete_set, needs_generation,
-                      parse_rows, row_words, split_facet_rows, stamp,
+                      not_plain, parse_rows, row_words, split_facet_rows, stamp,
                       style_examples, system_prompt)
 
 
@@ -123,6 +123,35 @@ class StampTest(unittest.TestCase):
         self.assertEqual(["good-row"], [r["id"] for r in rows])
         self.assertEqual("generated", rows[0]["words"])
 
+    def test_stamp_drops_stand_in_nouns_and_clipped_shorthand(self):
+        # kindel/porridge#45: "package" for a handoff, "the slide" for a
+        # summary deck. A row that says it is dropped, not shipped.
+        base = {"situation": "A handoff between teams",
+                "under": "Accepts the summary email.",
+                "justRight": "Opens the docs the team will need.",
+                "over": "Rewrites the other team's docs first."}
+        bad = [
+            dict(base, id="package", over="Rewrites the other team's package first."),
+            dict(base, id="slide", under="Accepts the slide."),
+            dict(base, id="ask", justRight="Makes a specific request, not the ask."),
+            dict(base, id="artifacts", under="Never opens the artifacts."),
+            dict(base, id="team-package", over="Rewrites the other team's package."),
+            dict(base, id="curly-package", over="Rewrites the other team’s package."),
+            dict(base, id="plural-artifacts", under="Never opens the teams' artifacts."),
+            dict(base, id="approve", over="Holds the quick approve overnight."),
+        ]
+        rows = stamp([dict(base, id="plain")] + bad)
+        self.assertEqual(["plain"], [r["id"] for r in rows])
+
+    def test_plain_words_allow_the_real_nouns(self):
+        for text in ("Reads the slide deck before the review.",
+                     "Asks for approval the same day.",
+                     "Opens the design doc, the handoff notes, and the tickets.",
+                     "Picks a software package the team already knows.",
+                     "Negotiates the compensation package before the offer goes out.",
+                     "Keeps the build artifacts for the release."):
+            self.assertIsNone(not_plain(text), text)
+
     def test_parse_rows_accepts_fenced_json(self):
         text = "```json\n{\"rows\": [{\"id\": \"a\"}]}\n```"
         self.assertEqual([{"id": "a"}], parse_rows(text))
@@ -171,6 +200,13 @@ class SystemPromptContrastTest(unittest.TestCase):
 
     def test_just_right_stays_a_named_tradeoff(self):
         self.assertIn("a named tradeoff, not a slogan", self.prompt)
+
+    def test_rows_use_plain_words_a_manager_would_say(self):
+        # kindel/porridge#45. The prompt asks; not_plain is the check.
+        self.assertIn("would say out loud", self.prompt)
+        self.assertIn("Name the concrete thing", self.prompt)
+        self.assertIn("Do not coin a stand-in noun", self.prompt)
+        self.assertIn("Write whole sentences", self.prompt)
 
 
 if __name__ == "__main__":

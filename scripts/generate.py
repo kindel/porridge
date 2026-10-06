@@ -33,6 +33,25 @@ N_ROWS = 8
 TRUTHY = ("1", "true", "yes", "on")
 SENTENCE = re.compile(r"(?<=[.!?])[\"'\)\]]*\s+")
 KEBAB = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+# Stand-in nouns and clipped shorthand the model reaches for when it does
+# not name the real thing (kindel/porridge#45). prompt.md asks for plain
+# words; this list is the check. A row that trips it is dropped like any
+# other malformed row, so keep the list to phrases that are never the
+# right word in a row. "Slide deck" is fine; "the slide" is not.
+# "Package" and "artifact" are only stand-ins when a determiner or
+# possessive points straight at them ("the package", "the other team's
+# artifacts"). With a real noun in front ("software package", "build
+# artifacts") they name a concrete thing, so they pass.
+# Possessives may use a straight or curly apostrophe, singular or plural
+# (team's, team’s, teams').
+_POINTER = r"(?:the|a|an|this|that|these|those|their|its|our|your|his|her|[a-z]+(?:['’]s|s['’]))"
+PLAIN_WORDS = [re.compile(p, re.IGNORECASE) for p in (
+    r"\b" + _POINTER + r"\s+packages?\b",
+    r"\b" + _POINTER + r"\s+artifacts?\b",
+    r"\b(?:the|an|this)\s+ask\b",
+    r"\bthe\s+slide\b(?!\s+deck)",
+    r"\b(?:the|an?)\s+(?:quick\s+)?approve\b",
+)]
 
 INDEX_URL = os.environ.get(
     "PRINCIPLES_INDEX_URL",
@@ -191,6 +210,15 @@ def parse_rows(text):
     return rows
 
 
+def not_plain(text):
+    """The first stand-in noun or clipped phrase in text, or None."""
+    for pat in PLAIN_WORDS:
+        m = pat.search(text or "")
+        if m:
+            return m.group(0)
+    return None
+
+
 def row_ok(row, seen):
     rid = row.get("id") or ""
     if not KEBAB.match(rid) or rid in seen:
@@ -200,6 +228,8 @@ def row_ok(row, seen):
         if not val:
             return False
         if "\u2014" in val or "\u2013" in val or "---" in val:
+            return False
+        if not_plain(val):
             return False
     for key in ("under", "justRight", "over"):
         n = len([x for x in SENTENCE.split((row.get(key) or "").strip()) if x])
