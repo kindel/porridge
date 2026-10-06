@@ -71,6 +71,8 @@ PORRIDGE_DRY_RUN=1 PRINCIPLES_ROOT=../principles python3 scripts/generate.py
 
 The prompt is `prompt.md`, read at run time. The model is xAI `grok-4.6`.
 
+The prompt asks for plain words a working manager would say out loud. `PLAIN_WORDS` in `scripts/generate.py` is the check: a row that uses a stand-in noun such as "the package" or "the ask" is dropped like any other malformed row, and the facet stays pending.
+
 ## App card
 
 This repo ships `card.json` and `icon.png` as the listing for any host. kindelwww and other hosts read these files to display Porridge in their app indexes.
