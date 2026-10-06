@@ -4,9 +4,9 @@ Just Right, Over, Under. A user's manual for living a company's principles.
 
 Live: [https://kindel.com/kld/apps/porridge/](https://kindel.com/kld/apps/porridge/). Amazon is the default. Arm is [https://kindel.com/kld/apps/porridge/?c=arm](https://kindel.com/kld/apps/porridge/?c=arm).
 
-The sets come from [`kindel/principles`](https://github.com/kindel/principles): Amazon, Arm, Coupang, Delivery Hero, and GitLab. This repo is the app. Teaching prose for Amazon still comes from [`kindel/biq`](https://github.com/kindel/biq) `data/lps/`. Every other company is definition plus calibration rows.
+The sets come from [`kindel/principles`](https://github.com/kindel/principles): Amazon, Arm, Coupang, Delivery Hero, and GitLab. This repo is the app. Amazon teaching prose is `data/teaching/amazon/` in that same repo. Every other company is definition plus calibration rows.
 
-`data/lps/` is an Amazon-only copy, so it is only ever consulted when the company is `amazon`. Asking it for another company's id returns Amazon's prose under someone else's name.
+The app asks for teaching only when the company is `amazon`.
 
 The `/lps/` alias was removed. Only BIQ keeps a root alias on kindel.com.
 
@@ -27,7 +27,7 @@ The standalone page fetches `kindel/principles` from jsDelivr. A host that alrea
   window.PORRIDGE = {
     principlesIndex: "/data/principles/index.json",
     principlesRecord: "/data/principles/{company}/{slug}.json",
-    teaching: "/data/lps/{slug}.json"
+    teaching: "/data/principles/teaching/amazon/{slug}.json"
   };
 </script>
 ```

@@ -23,10 +23,11 @@
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
   {{ $default := "" }}
   {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
-  {{/* lps index is Amazon-only and optional; used only for the Further reading list */}}
-  {{ $lpsIdxRes := resources.Get "data/lps/index.json" }}
-  {{ $lpsIdx := dict }}
-  {{ if $lpsIdxRes }}{{ $lpsIdx = $lpsIdxRes | transform.Unmarshal }}{{ end }}
+  {{/* Set-level Further reading is Amazon-only, from principles teaching. */}}
+  {{ $teachIdxRes := resources.Get "data/principles/teaching/amazon/index.json" }}
+  {{ if and (eq $default "amazon") (not $teachIdxRes) }}{{ errorf "missing data/principles/teaching/amazon/index.json" }}{{ end }}
+  {{ $teachIdx := dict }}
+  {{ if $teachIdxRes }}{{ $teachIdx = $teachIdxRes | transform.Unmarshal }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
   <article class="kld-topics-page lps-page tool-page">
     {{ if and (index .Site.Data.tools "porridge") (templates.Exists "partials/tool-header.html") }}
@@ -69,13 +70,13 @@
         </ol>
       </section>
     {{ end }}
-    {{/* Further reading from lps index is Amazon-only */}}
-    {{ if and (eq $default "amazon") $lpsIdx.blog }}
+    {{/* Further reading from the teaching index is Amazon-only */}}
+    {{ if and (eq $default "amazon") $teachIdx.blog }}
     <section class="lps-section" data-company-set="amazon" aria-labelledby="lps-blog-title">
       <p class="kld-section-label">Further reading</p>
       <h2 id="lps-blog-title">Sources and essays on the whole set.</h2>
       <ul class="lps-blog">
-        {{ range $lpsIdx.blog }}
+        {{ range $teachIdx.blog }}
           <li>
             <a href="{{ .url }}">{{ .title }}</a>
             {{ with .note }}<p>{{ . }}</p>{{ end }}
