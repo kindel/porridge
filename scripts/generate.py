@@ -42,7 +42,9 @@ KEBAB = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 # possessive points straight at them ("the package", "the other team's
 # artifacts"). With a real noun in front ("software package", "build
 # artifacts") they name a concrete thing, so they pass.
-_POINTER = r"(?:the|a|an|this|that|these|those|their|its|our|your|his|her|[a-z]+'s)"
+# Possessives may use a straight or curly apostrophe, singular or plural
+# (team's, team’s, teams').
+_POINTER = r"(?:the|a|an|this|that|these|those|their|its|our|your|his|her|[a-z]+(?:['’]s|s['’]))"
 PLAIN_WORDS = [re.compile(p, re.IGNORECASE) for p in (
     r"\b" + _POINTER + r"\s+packages?\b",
     r"\b" + _POINTER + r"\s+artifacts?\b",

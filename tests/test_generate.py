@@ -136,6 +136,8 @@ class StampTest(unittest.TestCase):
             dict(base, id="ask", justRight="Makes a specific request, not the ask."),
             dict(base, id="artifacts", under="Never opens the artifacts."),
             dict(base, id="team-package", over="Rewrites the other team's package."),
+            dict(base, id="curly-package", over="Rewrites the other team’s package."),
+            dict(base, id="plural-artifacts", under="Never opens the teams' artifacts."),
             dict(base, id="approve", over="Holds the quick approve overnight."),
         ]
         rows = stamp([dict(base, id="plain")] + bad)
