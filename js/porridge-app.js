@@ -4,6 +4,7 @@
   var RECORD = cfg.principlesRecord || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/{company}/{slug}.json";
   var FACETS = cfg.facetsJson || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/facets.json";
   var TEACH = cfg.teaching || "https://cdn.jsdelivr.net/gh/kindel/biq@main/data/lps/{slug}.json";
+  var TENSION_URL = "https://blog.kindel.com/2019/05/16/the-tension-is-intentional/";
   var root = document.getElementById("porridge-root");
   if (!root) return;
 
@@ -209,6 +210,9 @@
       afterCal += "<section class=\"lps-section\" aria-labelledby=\"lps-rel-title\">" +
         "<p class=\"kld-section-label\">Related</p>" +
         "<h2 id=\"lps-rel-title\">Principles that sit next to this one.</h2>" +
+        "<p class=\"lps-rel-intro\">Principles lean on each other, and some pull against each other on purpose " +
+        "(<a href=\"" + TENSION_URL + "\">the tension is intentional</a>). " +
+        "Here is how " + esc(rec.name) + " connects to the rest of the set.</p>" +
         "<ul class=\"lps-related\">" +
         teach.related.map(function (rel) {
           var relName = rel.id;
