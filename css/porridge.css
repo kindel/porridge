@@ -421,6 +421,7 @@
 }
 
 .lps-blog p.lps-blog-domain {
+  color: var(--kld-muted, #59636f);
   font-size: 0.78rem;
   line-height: 1.35;
   margin: 0.28rem 0 0;
