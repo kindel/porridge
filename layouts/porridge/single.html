@@ -23,7 +23,8 @@
     {{ end }}
   {{ end }}
   {{ $card := index .Site.Data.tools "porridge" }}
-  {{ if and $card (templates.Exists "partials/app-kit/hero.html") }}
+  {{/* The new hero drops the Porridge link. Use it only when the frame can put that link in the toolbar. */}}
+  {{ if and $card (templates.Exists "partials/app-kit/hero.html") (templates.Exists "partials/app-kit/frame-start.html") }}
     {{ partial "app-kit/hero.html" (dict
       "page" .
       "card" $card
