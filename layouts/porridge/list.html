@@ -30,20 +30,36 @@
   {{ if $teachIdxRes }}{{ $teachIdx = $teachIdxRes | transform.Unmarshal }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
   <article class="kld-topics-page lps-page tool-page">
-    {{ if and (index .Site.Data.tools "porridge") (templates.Exists "partials/tool-header.html") }}
-      {{ partial "tool-header.html" (index .Site.Data.tools "porridge") }}
+    {{ $card := index .Site.Data.tools "porridge" }}
+    {{ $frame := and $card (templates.Exists "partials/app-kit/frame-start.html") }}
+    {{ if $frame }}
+      {{ partial "app-kit/summary.html" $card }}
+      {{ partial "app-kit/related.html" $card }}
+    {{ else if and $card (templates.Exists "partials/tool-header.html") }}
+      {{ partial "tool-header.html" $card }}
     {{ end }}
     <section class="lps-intro" aria-labelledby="lps-how-title">
       <p class="kld-section-label">How to use it</p>
       <h2 id="lps-how-title">Get the balance right.</h2>
       <p>Porridge is a teaching tool. Pick the company whose principles fit you, then pick a principle. You get a deep dive on that principle you can learn from.</p>
+      {{ if not $frame }}
       <label class="lps-company-label" id="lps-company-label" for="lps-company">Company</label>
       <select id="lps-company" class="lps-select" aria-labelledby="lps-company-label">
         {{ range $pidx.companies }}
           <option value="{{ .id }}">{{ .name }}</option>
         {{ end }}
       </select>
+      {{ end }}
     </section>
+    {{ if $frame }}
+      {{ partial "app-kit/frame-start.html" (dict "card" $card) }}
+      <label class="lps-company-label" id="lps-company-label" for="lps-company">Company</label>
+      <select id="lps-company" class="lps-select" aria-labelledby="lps-company-label">
+        {{ range $pidx.companies }}
+          <option value="{{ .id }}">{{ .name }}</option>
+        {{ end }}
+      </select>
+    {{ end }}
     {{ range $pidx.companies }}
       {{ $co := . }}
       {{ $q := "" }}
@@ -69,6 +85,9 @@
           {{ end }}
         </ol>
       </section>
+    {{ end }}
+    {{ if $frame }}
+      {{ partial "app-kit/frame-end.html" . }}
     {{ end }}
     {{/* Further reading from the teaching index is Amazon-only */}}
     {{ if and (eq $default "amazon") $teachIdx.blog }}
