@@ -148,9 +148,15 @@
           {{ end }}
         {{ end }}
       {{ end }}
-      {{/* No generated rows: say so, never an empty table. SCHEMA.md forbids
-           falling back to the record's human rows or the facet's refs. */}}
+      {{/* No generated rows: valid data never reaches this branch. The
+           principles check requires every principle to have generated rows,
+           and a known principle fails the build here so a bad pin cannot
+           ship the fallback. The paragraph stays for a page that is not in
+           the index. SCHEMA.md forbids falling back to human rows or refs. */}}
       {{ if not $mergedRows }}
+        {{ if $thisPrincipleEntry }}
+          {{ errorf "%s/%s has no generated calibration rows" $company $slug }}
+        {{ end }}
         <p class="lps-cal-empty">
           {{ if $thisFacets }}
             The calibration table for {{ $lp.name }} has not been generated yet.

@@ -147,7 +147,10 @@
         "<td data-label=\"Just Right\">" + expandLp(r.justRight, principles, companyId) + "</td>" +
         "<td data-label=\"Over\">" + expandLp(r.over, principles, companyId) + "</td></tr>";
     }).join("");
-    // No generated rows: say so, never an empty table. SCHEMA.md forbids
+    // No generated rows: say so, never an empty table. Valid principles data
+    // never hits this branch. The principles check requires generated rows,
+    // and the Hugo build fails for a known principle that has none. This
+    // sentence is the fallback for a bad or older payload. SCHEMA.md forbids
     // falling back to the record's human rows or the facet's refs.
     var calBody;
     if (mergedRows.length) {
