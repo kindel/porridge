@@ -113,16 +113,16 @@
       "<h2>" + esc(UI.heading) + "</h2>" +
       "<p>" + esc(UI.intro) + "</p>" +
       "</section>" +
+      "<section class=\"lps-or\">" +
+      "<label class=\"lps-or-label\" for=\"lps-company\">" + esc(UI.companyPrompt) + "</label>" +
+      "<select id=\"lps-company\" class=\"lps-select\" data-default=\"" + esc(def) + "\">" + opts + "</select>" +
+      "</section>" +
       "<section class=\"lps-index\">" +
       back +
       "<p class=\"kld-section-label\">The set</p>" +
       "<h2>" + setTitle + "</h2>" +
       (co.preamble ? "<div class=\"lps-preamble\"><p>" + inlineMd(co.preamble) + "</p></div>" : "") +
       "<ol class=\"lps-card-list\">" + cards + "</ol></section>" +
-      "<section class=\"lps-or\">" +
-      "<label class=\"lps-or-label\" for=\"lps-company\">" + esc(UI.companyPrompt) + "</label>" +
-      "<select id=\"lps-company\" class=\"lps-select\" data-default=\"" + esc(def) + "\">" + opts + "</select>" +
-      "</section>" +
       "<p class=\"lps-add-note\">To add another company's set, <a href=\"https://github.com/kindel/principles/issues/new\">open an issue on kindel/principles</a>.</p>";
     var companySel = document.getElementById("lps-company");
     if (companyId === def) companySel.value = "";

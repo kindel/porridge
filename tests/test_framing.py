@@ -49,3 +49,14 @@ class FramingTest(unittest.TestCase):
             self.assertIn(sentence, content)
             self.assertIn(sentence, js)
         self.assertNotIn("Pick the company whose principles fit you", js)
+
+    def test_the_company_control_sits_above_the_cards(self):
+        layout = read("layouts", "porridge", "list.html")
+        js = read("js", "porridge-app.js")
+        self.assertLess(layout.index('class="lps-or"'), layout.index("lps-card-list"))
+        self.assertLess(js.index('class=\\"lps-or\\"'), js.index("lps-card-list"))
+        css = read("css", "porridge.css")
+        start = css.index(".lps-or-label")
+        block = css[start:css.index("}", start)]
+        self.assertIn("var(--kld-muted", block)
+        self.assertIn("font-weight: 400", block)
