@@ -5,6 +5,15 @@
   var FACETS = cfg.facetsJson || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/facets.json";
   var TEACH = cfg.teaching || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/teaching/amazon/{slug}.json";
   var TENSION_URL = "https://blog.kindel.com/2019/05/16/the-tension-is-intentional/";
+  // Same sentences as content/porridge/_index.md. The Hugo page reads those
+  // params. This standalone page has no Hugo, so the strings live here too.
+  var UI = cfg.ui || {
+    heading: "Principles that work for any company.",
+    intro: "Pick a principle. You get a deep dive you can learn from.",
+    companyPrompt: "Or view a company's principles:",
+    companyPlaceholder: "Choose a company",
+    backLabel: "Back to principles for any company"
+  };
   var root = document.getElementById("porridge-root");
   if (!root) return;
 
@@ -84,9 +93,13 @@
     var def = companies[0] && companies[0].id;
     if (!companyId || !companies.some(function (c) { return c.id === companyId; })) companyId = def;
     var co = companies.filter(function (c) { return c.id === companyId; })[0];
-    var opts = companies.map(function (c) {
-      return "<option value=\"" + esc(c.id) + "\"" + (c.id === companyId ? " selected" : "") + ">" + esc(c.name) + "</option>";
-    }).join("");
+    var opts = "<option value=\"\">" + esc(UI.companyPlaceholder) + "</option>" +
+      companies.filter(function (c) { return c.id !== def; }).map(function (c) {
+        return "<option value=\"" + esc(c.id) + "\"" + (c.id === companyId ? " selected" : "") + ">" + esc(c.name) + "</option>";
+      }).join("");
+    var setTitle = (companyId === def ? "" : esc(co.name) + " ") + esc(co.set) + ", in teaching order.";
+    var back = companyId === def ? "" :
+      "<p class=\"lps-back\"><a href=\"?\">" + esc(UI.backLabel) + "</a></p>";
     var cards = (co.principles || []).map(function (p) {
       var q = companyId === def ? "" : ("?c=" + encodeURIComponent(companyId) + "&p=" + encodeURIComponent(p.slug));
       if (companyId === def) q = "?p=" + encodeURIComponent(p.slug);
@@ -97,19 +110,24 @@
     root.innerHTML =
       "<section class=\"lps-intro\">" +
       "<p class=\"kld-section-label\">How to use it</p>" +
-      "<h2>Get the balance right.</h2>" +
-      "<p>Porridge is a teaching tool. Pick the company whose principles fit you, then pick a principle. You get a deep dive on that principle you can learn from.</p>" +
-      "<label class=\"lps-company-label\" for=\"lps-company\">Company</label>" +
-      "<select id=\"lps-company\" class=\"lps-select\">" + opts + "</select>" +
+      "<h2>" + esc(UI.heading) + "</h2>" +
+      "<p>" + esc(UI.intro) + "</p>" +
       "</section>" +
       "<section class=\"lps-index\">" +
+      back +
       "<p class=\"kld-section-label\">The set</p>" +
-      "<h2>" + esc(co.set) + ", in teaching order.</h2>" +
+      "<h2>" + setTitle + "</h2>" +
       (co.preamble ? "<div class=\"lps-preamble\"><p>" + inlineMd(co.preamble) + "</p></div>" : "") +
       "<ol class=\"lps-card-list\">" + cards + "</ol></section>" +
+      "<section class=\"lps-or\">" +
+      "<label class=\"lps-or-label\" for=\"lps-company\">" + esc(UI.companyPrompt) + "</label>" +
+      "<select id=\"lps-company\" class=\"lps-select\" data-default=\"" + esc(def) + "\">" + opts + "</select>" +
+      "</section>" +
       "<p class=\"lps-add-note\">To add another company's set, <a href=\"https://github.com/kindel/principles/issues/new\">open an issue on kindel/principles</a>.</p>";
-    document.getElementById("lps-company").addEventListener("change", function () {
-      var id = this.value;
+    var companySel = document.getElementById("lps-company");
+    if (companyId === def) companySel.value = "";
+    companySel.addEventListener("change", function () {
+      var id = this.value || def;
       setParams({ c: id === def ? "" : id, p: "" });
       renderList(bank, id);
     });
@@ -255,8 +273,11 @@
         }).join("") +
         "</ul></section>";
     }
+    var back = companyId === def ? "" :
+      "<p class=\"lps-back\"><a href=\"?\">" + esc(UI.backLabel) + "</a></p>";
     root.innerHTML =
       "<p class=\"kld-eyebrow\"><a href=\"" + (listQ || "?") + "\">Porridge</a>" + eyebrow + "</p>" +
+      back +
       "<h1>" + esc(rec.name) + "</h1>" +
       "<p>" + expandLp(rec.definition || "", principles, companyId) + "</p>" +
       "<nav class=\"lps-jump\" aria-label=\"All principles\"><ol>" + jump + "</ol></nav>" +

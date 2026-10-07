@@ -2,11 +2,11 @@
 
 Just Right, Over, Under. A user's manual for living a company's principles.
 
-Live: [https://kindel.com/kld/apps/porridge/](https://kindel.com/kld/apps/porridge/). The default is whatever company is first in the principles manifest. Today that is Any Company (id `generic`). Amazon is [https://kindel.com/kld/apps/porridge/?c=amazon](https://kindel.com/kld/apps/porridge/?c=amazon). Arm is [https://kindel.com/kld/apps/porridge/?c=arm](https://kindel.com/kld/apps/porridge/?c=arm).
+Live: [https://kindel.com/kld/apps/porridge/](https://kindel.com/kld/apps/porridge/). The bare URL is the generic set, principles that work for any company (id `generic`). A company view is `?c=amazon` or a company path. Amazon is [https://kindel.com/kld/apps/porridge/?c=amazon](https://kindel.com/kld/apps/porridge/?c=amazon). Arm is [https://kindel.com/kld/apps/porridge/?c=arm](https://kindel.com/kld/apps/porridge/?c=arm).
 
 The sets come from [`kindel/principles`](https://github.com/kindel/principles). This repo is the app. Teaching prose is `data/teaching/<company>/` in that same repo. The app shows teaching, examples, and Further reading only when that company has them. A company with no generated calibration rows shows no table.
 
-The app asks for teaching when `data/teaching/<company>/<slug>.json` exists. Amazon is required. Any Company reuses the classic set.
+The app asks for teaching when `data/teaching/<company>/<slug>.json` exists. Amazon is required. The generic set reuses the classic set.
 
 The `/lps/` alias was removed. Only BIQ keeps a root alias on kindel.com.
 

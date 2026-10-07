@@ -433,6 +433,34 @@
   margin: 0.28rem 0 0;
 }
 
+.lps-or {
+  margin: 2.5rem 0 0;
+}
+
+.lps-or-label {
+  display: block;
+  margin: 0 0 0.5rem;
+  color: var(--kld-ink, #17202b);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.lps-back {
+  margin: 0 0 1rem;
+}
+
+.lps-back a {
+  color: var(--kld-blue);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+.lps-back a:hover {
+  color: var(--kld-rust);
+}
+
 .lps-company-label {
   display: block;
   margin: 1.5rem 0 0.5rem;

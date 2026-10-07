@@ -37,22 +37,17 @@
     {{ end }}
     <section class="lps-intro" aria-labelledby="lps-how-title">
       <p class="kld-section-label">How to use it</p>
-      <h2 id="lps-how-title">Get the balance right.</h2>
-      <p>Porridge is a teaching tool. Pick the company whose principles fit you, then pick a principle. You get a deep dive on that principle you can learn from.</p>
-      <label class="lps-company-label" id="lps-company-label" for="lps-company">Company</label>
-      <select id="lps-company" class="lps-select" aria-labelledby="lps-company-label">
-        {{ range $pidx.companies }}
-          <option value="{{ .id }}">{{ .name }}</option>
-        {{ end }}
-      </select>
+      <h2 id="lps-how-title">{{ .Params.heading }}</h2>
+      <p>{{ .Params.intro }}</p>
     </section>
     {{ range $pidx.companies }}
       {{ $co := . }}
-      {{ $q := "" }}
-      {{ if ne $co.id $default }}{{ $q = printf "?c=%s" $co.id }}{{ end }}
       <section class="lps-index" data-company-set="{{ $co.id }}"{{ if ne $co.id $default }} hidden{{ end }} aria-labelledby="{{ printf "lps-list-%s" $co.id }}">
+        {{ if ne $co.id $default }}
+          <p class="lps-back"><a href="/kld/apps/porridge/">{{ $.Params.backLabel }}</a></p>
+        {{ end }}
         <p class="kld-section-label">The set</p>
-        <h2 id="{{ printf "lps-list-%s" $co.id }}">{{ $co.set }}, in teaching order.</h2>
+        <h2 id="{{ printf "lps-list-%s" $co.id }}">{{ if ne $co.id $default }}{{ $co.name }} {{ end }}{{ $co.set }}, in teaching order.</h2>
         {{ with $co.preamble }}
           <div class="lps-preamble">{{ . | markdownify }}</div>
         {{ end }}
@@ -75,6 +70,17 @@
         </ol>
       </section>
     {{ end }}
+    <section class="lps-or" aria-labelledby="lps-company-label">
+      <label class="lps-or-label" id="lps-company-label" for="lps-company">{{ .Params.companyPrompt }}</label>
+      <select id="lps-company" class="lps-select" data-default="{{ $default }}" aria-labelledby="lps-company-label">
+        <option value="">{{ .Params.companyPlaceholder }}</option>
+        {{ range $pidx.companies }}
+          {{ if ne .id $default }}
+            <option value="{{ .id }}">{{ .name }}</option>
+          {{ end }}
+        {{ end }}
+      </select>
+    </section>
     {{/* Further reading from the teaching index. Amazon's block stays as it was. */}}
     {{ if $teachIdx.blog }}
     <section class="lps-section" data-company-set="amazon"{{ if ne $default "amazon" }} hidden{{ end }} aria-labelledby="lps-blog-title">

@@ -71,6 +71,9 @@
   {{ if lt $i (sub (len $principles) 1) }}{{ $next = index $principles (add $i 1) }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
   <article class="kld-topics-page lps-page tool-page lps-principle">
+    {{ if and (ne $company $default) .Params.backLabel }}
+      <p class="lps-back"><a href="/kld/apps/porridge/">{{ .Params.backLabel }}</a></p>
+    {{ end }}
     <nav class="lps-jump" aria-label="All principles">
       <ol>
         {{ range $principles }}
