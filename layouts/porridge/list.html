@@ -75,13 +75,32 @@
         </ol>
       </section>
     {{ end }}
-    {{/* Further reading from the teaching index is Amazon-only */}}
+    {{/* Further reading from the teaching index. Amazon's block stays as it was. */}}
     {{ if $teachIdx.blog }}
     <section class="lps-section" data-company-set="amazon"{{ if ne $default "amazon" }} hidden{{ end }} aria-labelledby="lps-blog-title">
       <p class="kld-section-label">Further reading</p>
       <h2 id="lps-blog-title">Sources and essays on the whole set.</h2>
       <ul class="lps-blog">
         {{ range $teachIdx.blog }}
+          <li>
+            <a href="{{ .url }}">{{ .title }}</a>
+            {{ with .note }}<p>{{ . }}</p>{{ end }}
+            {{ $host := partial "reading-host.html" .url }}
+            {{ with $host }}<p class="lps-blog-domain">{{ . }}</p>{{ end }}
+          </li>
+        {{ end }}
+      </ul>
+    </section>
+    {{ end }}
+    {{ $genTeachRes := resources.Get "data/principles/teaching/generic/index.json" }}
+    {{ $genTeach := dict }}
+    {{ if $genTeachRes }}{{ $genTeach = $genTeachRes | transform.Unmarshal }}{{ end }}
+    {{ if $genTeach.blog }}
+    <section class="lps-section" data-company-set="generic"{{ if ne $default "generic" }} hidden{{ end }} aria-labelledby="lps-blog-title-generic">
+      <p class="kld-section-label">Further reading</p>
+      <h2 id="lps-blog-title-generic">Sources and essays on the whole set.</h2>
+      <ul class="lps-blog">
+        {{ range $genTeach.blog }}
           <li>
             <a href="{{ .url }}">{{ .title }}</a>
             {{ with .note }}<p>{{ . }}</p>{{ end }}

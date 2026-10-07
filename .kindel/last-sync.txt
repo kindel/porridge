@@ -1,4 +1,7 @@
-principles 6035e88870aa891928f106e11f37e3783bc7d4d0
+principles 6b98d6013c721cef08843c31a575fdc9eed215e0
+
+stubs unchanged from 6035e88870aa891928f106e11f37e3783bc7d4d0 (records did not change).
+teaching is data/teaching/generic in that principles commit. intentional-about-culture has no file.
 
 added:
   generic/_index.md

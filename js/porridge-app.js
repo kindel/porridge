@@ -24,10 +24,17 @@
     return RECORD.replace("{company}", company).replace("{slug}", slug);
   }
   function teachUrl(company, slug) {
-    // Teaching prose is Amazon-only and lives in principles
-    // data/teaching/amazon. Do not fetch it for another company.
-    if (company !== "amazon") return "";
-    return TEACH.replace("{slug}", slug);
+    // Default pattern is the Amazon path. A company with its own teaching
+    // directory uses that directory. A pattern with no company slot and no
+    // Amazon directory is left alone, so a custom URL is not guessed.
+    if (!company || !slug) return "";
+    if (TEACH.indexOf("{company}") !== -1) {
+      return TEACH.replace("{company}", company).replace("{slug}", slug);
+    }
+    if (company === "amazon") return TEACH.replace("{slug}", slug);
+    var swapped = TEACH.replace("/teaching/amazon/", "/teaching/" + company + "/");
+    if (swapped === TEACH) return "";
+    return swapped.replace("{slug}", slug);
   }
   // Emphasis only. Escape first so the preamble cannot inject markup.
   function inlineMd(md) {
