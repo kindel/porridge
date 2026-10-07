@@ -23,6 +23,7 @@
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
   {{ $default := "" }}
   {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
+  {{ if not .Params.cardCta }}{{ errorf "content/porridge/_index.md needs cardCta" }}{{ end }}
   {{/* Amazon's set-level Further reading comes from principles teaching. */}}
   {{ $hasAmazon := false }}
   {{ range $pidx.companies }}{{ if eq .id "amazon" }}{{ $hasAmazon = true }}{{ end }}{{ end }}
@@ -76,14 +77,15 @@
             {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $co.id .slug }}{{ end }}
             {{ $lp := $lpRes | transform.Unmarshal }}
             <li>
-              <article class="lps-card">
+              <a class="lps-card" href="{{ printf "/kld/apps/porridge/%s/%s/" $co.id .slug }}">
                 <span class="lps-card-num">{{ .sort }}</span>
                 {{ with $lp.group }}
                   <p class="lps-card-group">{{ replace . "-" " " }}</p>
                 {{ end }}
-                <h3><a href="{{ printf "/kld/apps/porridge/%s/%s/" $co.id .slug }}">{{ $lp.name }}</a></h3>
+                <h3>{{ $lp.name }}</h3>
                 <p>{{ $lp.definition }}</p>
-              </article>
+                <p class="lps-card-go">{{ $.Params.cardCta }}</p>
+              </a>
             </li>
           {{ end }}
         </ol>

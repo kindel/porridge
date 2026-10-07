@@ -111,12 +111,39 @@
   padding: 0;
 }
 
-.lps-card {
+a.lps-card {
   background: #ffffff;
   border: 1px solid var(--kld-line);
   border-radius: 8px;
+  box-sizing: border-box;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   padding: 1.2rem 1.2rem 1.35rem;
+  text-decoration: none;
+  transition: border-color 80ms ease, box-shadow 80ms ease;
+}
+
+a.lps-card:link,
+a.lps-card:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.lps-card:hover {
+  border-color: var(--kld-ink, #17202b);
+  box-shadow: 0 1px 2px rgba(23, 32, 43, 0.14);
+}
+
+a.lps-card:active {
+  border-color: var(--kld-ink, #17202b);
+  box-shadow: 0 1px 2px rgba(23, 32, 43, 0.2);
+}
+
+a.lps-card:focus-visible {
+  outline: 2px solid var(--kld-blue, #1d4f91);
+  outline-offset: 3px;
 }
 
 .lps-card-num {
@@ -130,19 +157,16 @@
 }
 
 .lps-card h3 {
-  color: var(--kld-ink);
+  color: var(--kld-blue);
   font-size: 1.15rem;
   line-height: 1.25;
   margin: 0 0 0.6rem;
-}
-
-.lps-card h3 a {
-  color: var(--kld-blue);
   text-decoration: underline;
   text-underline-offset: 0.12em;
 }
 
-.lps-card h3 a:hover {
+a.lps-card:hover h3,
+a.lps-card:hover .lps-card-go {
   color: var(--kld-rust);
 }
 
@@ -151,6 +175,15 @@
   font-size: 0.98rem;
   line-height: 1.55;
   margin: 0;
+}
+
+.lps-card .lps-card-go {
+  color: var(--kld-blue);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-top: auto;
+  padding-top: 0.95rem;
 }
 
 .lps-jump {
