@@ -12,7 +12,8 @@
     intro: "Pick a principle. You get a deep dive you can learn from.",
     companyPrompt: "Or view a company's principles:",
     companyPlaceholder: "Choose a company",
-    backLabel: "Back to the universal principles"
+    backLabel: "Back to the universal principles",
+    cardCta: "Learn how to live it »"
   };
   var root = document.getElementById("porridge-root");
   if (!root) return;
@@ -104,8 +105,8 @@
       var q = companyId === def ? "" : ("?c=" + encodeURIComponent(companyId) + "&p=" + encodeURIComponent(p.slug));
       if (companyId === def) q = "?p=" + encodeURIComponent(p.slug);
       var group = p.group ? "<p class=\"lps-card-group\">" + esc(groupLabel(p.group)) + "</p>" : "";
-      return "<li><article class=\"lps-card\"><span class=\"lps-card-num\">" + esc(p.sort) + "</span>" +
-        group + "<h3><a href=\"" + q + "\">" + esc(p.name) + "</a></h3><p>" + esc(p.definition || "") + "</p></article></li>";
+      return "<li><a class=\"lps-card\" href=\"" + q + "\"><span class=\"lps-card-num\">" + esc(p.sort) + "</span>" +
+        group + "<h3>" + esc(p.name) + "</h3><p>" + esc(p.definition || "") + "</p><p class=\"lps-card-go\">" + esc(UI.cardCta) + "</p></a></li>";
     }).join("");
     root.innerHTML =
       "<section class=\"lps-intro\">" +
