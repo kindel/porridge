@@ -14,6 +14,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROMPT = "Or view a company's principles:"
 HEADING = "These are universal leadership principles that work for any company."
 BACK = "Back to the universal principles"
+CARD = "Learn how to live it »"
 
 
 def read(*parts):
@@ -77,3 +78,23 @@ class FramingTest(unittest.TestCase):
             single.index(".Params.backLabel"),
         )
         self.assertIn('partial "app-kit/frame-end.html"', single)
+
+    def test_the_whole_card_is_one_link(self):
+        content = read("content", "porridge", "_index.md")
+        layout = read("layouts", "porridge", "list.html")
+        js = read("js", "porridge-app.js")
+        css = read("css", "porridge.css")
+        self.assertIn(CARD, content)
+        self.assertIn(CARD, js)
+        self.assertIn("$.Params.cardCta", layout)
+        self.assertIn('class="lps-card"', layout)
+        self.assertNotIn("<h3><a", layout)
+        self.assertNotIn("<h3><a", js)
+        self.assertIn("a.lps-card:focus-visible", css)
+        self.assertIn("a.lps-card:hover", css)
+        self.assertIn("a.lps-card:active", css)
+        card = layout[layout.index('class="lps-card"'):layout.index("lps-card-go")]
+        self.assertNotIn("<a ", card)
+        self.assertIn("UI_DEFAULTS", js)
+        self.assertIn("custom[k] || UI_DEFAULTS[k]", js)
+        self.assertNotIn("var UI = cfg.ui", js)
