@@ -8,11 +8,11 @@
   // Same sentences as content/porridge/_index.md. The Hugo page reads those
   // params. This standalone page has no Hugo, so the strings live here too.
   var UI = cfg.ui || {
-    heading: "Principles that work for any company.",
+    heading: "These are universal leadership principles that work for any company.",
     intro: "Pick a principle. You get a deep dive you can learn from.",
     companyPrompt: "Or view a company's principles:",
     companyPlaceholder: "Choose a company",
-    backLabel: "Back to principles for any company"
+    backLabel: "Back to the universal principles"
   };
   var root = document.getElementById("porridge-root");
   if (!root) return;

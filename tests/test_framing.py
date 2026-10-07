@@ -12,8 +12,8 @@ import unittest
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PROMPT = "Or view a company's principles:"
-HEADING = "Principles that work for any company."
-BACK = "Back to principles for any company"
+HEADING = "These are universal leadership principles that work for any company."
+BACK = "Back to the universal principles"
 
 
 def read(*parts):
