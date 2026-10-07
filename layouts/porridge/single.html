@@ -7,11 +7,13 @@
   {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $company $slug }}{{ end }}
   {{ $lp := $lpRes | transform.Unmarshal }}
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
+  {{ $default := "" }}
+  {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
   {{ range $pidx.companies }}
     {{ if eq .id $company }}{{ $principles = .principles }}{{ end }}
   {{ end }}
   {{ $home := "/kld/apps/porridge/" }}
-  {{ if ne $company "amazon" }}{{ $home = printf "/kld/apps/porridge/?c=%s" $company }}{{ end }}
+  {{ if ne $company $default }}{{ $home = printf "/kld/apps/porridge/?c=%s" $company }}{{ end }}
   {{ $groupLabel := "" }}
   {{ with $lp.group }}
     {{ if eq . "one-arm" }}
@@ -64,6 +66,8 @@
     {{ $teach = $teachRes | transform.Unmarshal }}
   {{ end }}
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
+  {{ $default := "" }}
+  {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
   {{ $companyName := $company }}
   {{ $companySource := "" }}
   {{ range $pidx.companies }}
@@ -74,7 +78,7 @@
     {{ end }}
   {{ end }}
   {{ $home := "/kld/apps/porridge/" }}
-  {{ if ne $company "amazon" }}{{ $home = printf "/kld/apps/porridge/?c=%s" $company }}{{ end }}
+  {{ if ne $company $default }}{{ $home = printf "/kld/apps/porridge/?c=%s" $company }}{{ end }}
   {{ $i := 0 }}
   {{ range $idxN, $p := $principles }}
     {{ if eq $p.slug $slug }}{{ $i = $idxN }}{{ end }}

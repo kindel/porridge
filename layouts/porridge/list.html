@@ -86,12 +86,9 @@
         </ol>
       </section>
     {{ end }}
-    {{ if $frame }}
-      {{ partial "app-kit/frame-end.html" . }}
-    {{ end }}
-    {{/* Further reading from the teaching index is Amazon-only */}}
-    {{ if and (eq $default "amazon") $teachIdx.blog }}
-    <section class="lps-section" data-company-set="amazon" aria-labelledby="lps-blog-title">
+    {{/* Amazon teaching blog. Same company switch as the sets above, including when Amazon is not the index default. */}}
+    {{ if $teachIdx.blog }}
+    <section class="lps-section" data-company-set="amazon"{{ if ne $default "amazon" }} hidden{{ end }} aria-labelledby="lps-blog-title">
       <p class="kld-section-label">Further reading</p>
       <h2 id="lps-blog-title">Sources and essays on the whole set.</h2>
       <ul class="lps-blog">
@@ -105,6 +102,9 @@
         {{ end }}
       </ul>
     </section>
+    {{ end }}
+    {{ if $frame }}
+      {{ partial "app-kit/frame-end.html" . }}
     {{ end }}
     <p class="lps-add-note">To add another company's set, <a href="https://github.com/kindel/principles/issues/new">open an issue on kindel/principles</a>.</p>
     {{ if templates.Exists "partials/app-feedback.html" }}
