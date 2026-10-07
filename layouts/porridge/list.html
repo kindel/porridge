@@ -23,7 +23,7 @@
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
   {{ $default := "" }}
   {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
-  {{/* Set-level Further reading is Amazon-only, from principles teaching. */}}
+  {{/* Amazon's set-level Further reading comes from principles teaching. */}}
   {{ $hasAmazon := false }}
   {{ range $pidx.companies }}{{ if eq .id "amazon" }}{{ $hasAmazon = true }}{{ end }}{{ end }}
   {{ $teachIdxRes := resources.Get "data/principles/teaching/amazon/index.json" }}
@@ -32,14 +32,22 @@
   {{ if $teachIdxRes }}{{ $teachIdx = $teachIdxRes | transform.Unmarshal }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
   <article class="kld-topics-page lps-page tool-page">
-    {{ if and (index .Site.Data.tools "porridge") (templates.Exists "partials/tool-header.html") }}
-      {{ partial "tool-header.html" (index .Site.Data.tools "porridge") }}
+    {{ $card := index .Site.Data.tools "porridge" }}
+    {{ $frame := and $card (templates.Exists "partials/app-kit/frame-start.html") }}
+    {{ if $frame }}
+      {{ partial "app-kit/summary.html" $card }}
+      {{ partial "app-kit/related.html" $card }}
+    {{ else if and $card (templates.Exists "partials/tool-header.html") }}
+      {{ partial "tool-header.html" $card }}
     {{ end }}
     <section class="lps-intro" aria-labelledby="lps-how-title">
       <p class="kld-section-label">How to use it</p>
       <h2 id="lps-how-title">{{ .Params.heading }}</h2>
       <p>{{ .Params.intro }}</p>
     </section>
+    {{ if $frame }}
+      {{ partial "app-kit/frame-start.html" (dict "card" $card "page" $) }}
+    {{ end }}
     <section class="lps-or" aria-labelledby="lps-company-label">
       <label class="lps-or-label" id="lps-company-label" for="lps-company">{{ .Params.companyPrompt }}</label>
       <select id="lps-company" class="lps-select" data-default="{{ $default }}" aria-labelledby="lps-company-label">
@@ -81,7 +89,7 @@
         </ol>
       </section>
     {{ end }}
-    {{/* Further reading from the teaching index. Amazon's block stays as it was. */}}
+    {{/* Further reading follows the company switch, including when Amazon is not the default. */}}
     {{ if $teachIdx.blog }}
     <section class="lps-section" data-company-set="amazon"{{ if ne $default "amazon" }} hidden{{ end }} aria-labelledby="lps-blog-title">
       <p class="kld-section-label">Further reading</p>
@@ -116,6 +124,9 @@
         {{ end }}
       </ul>
     </section>
+    {{ end }}
+    {{ if $frame }}
+      {{ partial "app-kit/frame-end.html" . }}
     {{ end }}
     <p class="lps-add-note">To add another company's set, <a href="https://github.com/kindel/principles/issues/new">open an issue on kindel/principles</a>.</p>
     {{ if templates.Exists "partials/app-feedback.html" }}
