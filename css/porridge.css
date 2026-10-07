@@ -89,11 +89,17 @@
 .lps-intro p,
 .lps-section > p,
 .lps-cal-intro,
-.lps-rel-intro {
+.lps-rel-intro,
+.lps-preamble,
+.lps-preamble p {
   color: var(--kld-muted);
   font-size: 1.06rem;
   line-height: 1.62;
   max-width: 42rem;
+}
+
+.lps-preamble p {
+  margin: 0 0 1rem;
 }
 
 .lps-card-list {
@@ -453,6 +459,34 @@
   font-size: 0.78rem;
   line-height: 1.35;
   margin: 0.28rem 0 0;
+}
+
+.lps-or {
+  margin: 0.25rem 0 1.5rem;
+}
+
+.lps-or-label {
+  display: block;
+  margin: 0 0 0.35rem;
+  color: var(--kld-muted, #59636f);
+  font-size: 0.92rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.lps-back {
+  margin: 0 0 1rem;
+}
+
+.lps-back a {
+  color: var(--kld-blue);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+.lps-back a:hover {
+  color: var(--kld-rust);
 }
 
 .lps-company-label {

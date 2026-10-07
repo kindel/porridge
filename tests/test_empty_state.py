@@ -3,10 +3,11 @@
 
 SCHEMA.md in kindel/principles: a display consumer shows only generated
 rows on the principle's facets, and when there are none it does not fall
-back to the record's human rows or the facet's refs. Every principle the
-facet audit skips (all of GitLab, for one) has no rows. Rendering the table
-shell anyway reads as a broken page (kindel/porridge#42). Both renderers
-must guard the table on having rows and say why when they do not.
+back to the record's human rows or the facet's refs. Valid data has rows
+for every principle. The Hugo build fails if a known principle has none.
+The fallback sentence stays for a payload that failed that check. Rendering
+the table shell anyway reads as a broken page (kindel/porridge#42). Both
+renderers must guard the table on having rows.
 """
 
 import os

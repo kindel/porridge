@@ -23,9 +23,11 @@
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
   {{ $default := "" }}
   {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
-  {{/* Set-level Further reading is Amazon-only, from principles teaching. */}}
+  {{/* Amazon's set-level Further reading comes from principles teaching. */}}
+  {{ $hasAmazon := false }}
+  {{ range $pidx.companies }}{{ if eq .id "amazon" }}{{ $hasAmazon = true }}{{ end }}{{ end }}
   {{ $teachIdxRes := resources.Get "data/principles/teaching/amazon/index.json" }}
-  {{ if and (eq $default "amazon") (not $teachIdxRes) }}{{ errorf "missing data/principles/teaching/amazon/index.json" }}{{ end }}
+  {{ if and $hasAmazon (not $teachIdxRes) }}{{ errorf "missing data/principles/teaching/amazon/index.json" }}{{ end }}
   {{ $teachIdx := dict }}
   {{ if $teachIdxRes }}{{ $teachIdx = $teachIdxRes | transform.Unmarshal }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
@@ -40,33 +42,34 @@
     {{ end }}
     <section class="lps-intro" aria-labelledby="lps-how-title">
       <p class="kld-section-label">How to use it</p>
-      <h2 id="lps-how-title">Get the balance right.</h2>
-      <p>Porridge is a teaching tool. Pick the company whose principles fit you, then pick a principle. You get a deep dive on that principle you can learn from.</p>
-      {{ if not $frame }}
-      <label class="lps-company-label" id="lps-company-label" for="lps-company">Company</label>
-      <select id="lps-company" class="lps-select" aria-labelledby="lps-company-label">
-        {{ range $pidx.companies }}
-          <option value="{{ .id }}">{{ .name }}</option>
-        {{ end }}
-      </select>
-      {{ end }}
+      <h2 id="lps-how-title">{{ .Params.heading }}</h2>
+      <p>{{ .Params.intro }}</p>
     </section>
     {{ if $frame }}
       {{ partial "app-kit/frame-start.html" (dict "card" $card "page" $) }}
-      <label class="lps-company-label" id="lps-company-label" for="lps-company">Company</label>
-      <select id="lps-company" class="lps-select" aria-labelledby="lps-company-label">
+    {{ end }}
+    <section class="lps-or" aria-labelledby="lps-company-label">
+      <label class="lps-or-label" id="lps-company-label" for="lps-company">{{ .Params.companyPrompt }}</label>
+      <select id="lps-company" class="lps-select" data-default="{{ $default }}" aria-labelledby="lps-company-label">
+        <option value="">{{ .Params.companyPlaceholder }}</option>
         {{ range $pidx.companies }}
-          <option value="{{ .id }}">{{ .name }}</option>
+          {{ if ne .id $default }}
+            <option value="{{ .id }}">{{ .name }}</option>
+          {{ end }}
         {{ end }}
       </select>
-    {{ end }}
+    </section>
     {{ range $pidx.companies }}
       {{ $co := . }}
-      {{ $q := "" }}
-      {{ if ne $co.id $default }}{{ $q = printf "?c=%s" $co.id }}{{ end }}
       <section class="lps-index" data-company-set="{{ $co.id }}"{{ if ne $co.id $default }} hidden{{ end }} aria-labelledby="{{ printf "lps-list-%s" $co.id }}">
+        {{ if ne $co.id $default }}
+          <p class="lps-back"><a href="/kld/apps/porridge/">{{ $.Params.backLabel }}</a></p>
+        {{ end }}
         <p class="kld-section-label">The set</p>
-        <h2 id="{{ printf "lps-list-%s" $co.id }}">{{ $co.set }}, in teaching order.</h2>
+        <h2 id="{{ printf "lps-list-%s" $co.id }}">{{ if ne $co.id $default }}{{ $co.name }} {{ end }}{{ $co.set }}, in teaching order.</h2>
+        {{ with $co.preamble }}
+          <div class="lps-preamble">{{ . | markdownify }}</div>
+        {{ end }}
         <ol class="lps-card-list">
           {{ range $co.principles }}
             {{ $lpRes := resources.Get (printf "data/principles/%s/%s.json" $co.id .slug) }}
@@ -86,13 +89,32 @@
         </ol>
       </section>
     {{ end }}
-    {{/* Amazon teaching blog. Same company switch as the sets above, including when Amazon is not the index default. */}}
+    {{/* Further reading follows the company switch, including when Amazon is not the default. */}}
     {{ if $teachIdx.blog }}
     <section class="lps-section" data-company-set="amazon"{{ if ne $default "amazon" }} hidden{{ end }} aria-labelledby="lps-blog-title">
       <p class="kld-section-label">Further reading</p>
       <h2 id="lps-blog-title">Sources and essays on the whole set.</h2>
       <ul class="lps-blog">
         {{ range $teachIdx.blog }}
+          <li>
+            <a href="{{ .url }}">{{ .title }}</a>
+            {{ with .note }}<p>{{ . }}</p>{{ end }}
+            {{ $host := partial "reading-host.html" .url }}
+            {{ with $host }}<p class="lps-blog-domain">{{ . }}</p>{{ end }}
+          </li>
+        {{ end }}
+      </ul>
+    </section>
+    {{ end }}
+    {{ $genTeachRes := resources.Get "data/principles/teaching/generic/index.json" }}
+    {{ $genTeach := dict }}
+    {{ if $genTeachRes }}{{ $genTeach = $genTeachRes | transform.Unmarshal }}{{ end }}
+    {{ if $genTeach.blog }}
+    <section class="lps-section" data-company-set="generic"{{ if ne $default "generic" }} hidden{{ end }} aria-labelledby="lps-blog-title-generic">
+      <p class="kld-section-label">Further reading</p>
+      <h2 id="lps-blog-title-generic">Sources and essays on the whole set.</h2>
+      <ul class="lps-blog">
+        {{ range $genTeach.blog }}
           <li>
             <a href="{{ .url }}">{{ .title }}</a>
             {{ with .note }}<p>{{ . }}</p>{{ end }}

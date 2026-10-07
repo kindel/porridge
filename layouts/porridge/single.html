@@ -1,14 +1,15 @@
 {{ define "header" }}
+  {{ $pidxEarly := resources.Get "data/principles/index.json" | transform.Unmarshal }}
+  {{ $default := "" }}
+  {{ if $pidxEarly.companies }}{{ $default = (index $pidxEarly.companies 0).id }}{{ end }}
   {{ $slug := .Params.lpId }}
-  {{ $company := .Params.company | default "amazon" }}
+  {{ $company := .Params.company | default $default }}
   {{ $principles := slice }}
   {{/* Always read name/definition/rows from principles */}}
   {{ $lpRes := resources.Get (printf "data/principles/%s/%s.json" $company $slug) }}
   {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $company $slug }}{{ end }}
   {{ $lp := $lpRes | transform.Unmarshal }}
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
-  {{ $default := "" }}
-  {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
   {{ range $pidx.companies }}
     {{ if eq .id $company }}{{ $principles = .principles }}{{ end }}
   {{ end }}
@@ -51,23 +52,27 @@
 {{ end }}
 
 {{ define "main" }}
+  {{ $pidxEarly := resources.Get "data/principles/index.json" | transform.Unmarshal }}
+  {{ $default := "" }}
+  {{ if $pidxEarly.companies }}{{ $default = (index $pidxEarly.companies 0).id }}{{ end }}
   {{ $slug := .Params.lpId }}
-  {{ $company := .Params.company | default "amazon" }}
+  {{ $company := .Params.company | default $default }}
   {{ $principles := slice }}
   {{/* Always read name/definition/rows from principles */}}
   {{ $lpRes := resources.Get (printf "data/principles/%s/%s.json" $company $slug) }}
   {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $company $slug }}{{ end }}
   {{ $lp := $lpRes | transform.Unmarshal }}
-  {{/* Amazon teaching lives in principles. Other companies are definition plus rows. */}}
+  {{/* Amazon teaching is required. Another company loads teaching when the file exists. */}}
   {{ $teach := dict }}
   {{ if eq $company "amazon" }}
     {{ $teachRes := resources.Get (printf "data/principles/teaching/amazon/%s.json" $slug) }}
     {{ if not $teachRes }}{{ errorf "missing Amazon teaching for %s" $slug }}{{ end }}
     {{ $teach = $teachRes | transform.Unmarshal }}
+  {{ else }}
+    {{ $teachRes := resources.Get (printf "data/principles/teaching/%s/%s.json" $company $slug) }}
+    {{ if $teachRes }}{{ $teach = $teachRes | transform.Unmarshal }}{{ end }}
   {{ end }}
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
-  {{ $default := "" }}
-  {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
   {{ $companyName := $company }}
   {{ $companySource := "" }}
   {{ range $pidx.companies }}
@@ -93,6 +98,9 @@
     {{ $frame := and $card (templates.Exists "partials/app-kit/frame-start.html") }}
     {{ if $frame }}
       {{ partial "app-kit/frame-start.html" (dict "card" $card "page" $ "nameHref" $home) }}
+    {{ end }}
+    {{ if and (ne $company $default) .Params.backLabel }}
+      <p class="lps-back"><a href="/kld/apps/porridge/">{{ .Params.backLabel }}</a></p>
     {{ end }}
     <nav class="lps-jump" aria-label="All principles">
       <ol>
@@ -171,9 +179,15 @@
           {{ end }}
         {{ end }}
       {{ end }}
-      {{/* No generated rows: say so, never an empty table. SCHEMA.md forbids
-           falling back to the record's human rows or the facet's refs. */}}
+      {{/* No generated rows: valid data never reaches this branch. The
+           principles check requires every principle to have generated rows,
+           and a known principle fails the build here so a bad pin cannot
+           ship the fallback. The paragraph stays for a page that is not in
+           the index. SCHEMA.md forbids falling back to human rows or refs. */}}
       {{ if not $mergedRows }}
+        {{ if $thisPrincipleEntry }}
+          {{ errorf "%s/%s has no generated calibration rows" $company $slug }}
+        {{ end }}
         <p class="lps-cal-empty">
           {{ if $thisFacets }}
             The calibration table for {{ $lp.name }} has not been generated yet.
