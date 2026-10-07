@@ -7,11 +7,35 @@
   {{ if not $lpRes }}{{ errorf "missing record for %s/%s" $company $slug }}{{ end }}
   {{ $lp := $lpRes | transform.Unmarshal }}
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
+  {{ $default := "" }}
+  {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
   {{ range $pidx.companies }}
     {{ if eq .id $company }}{{ $principles = .principles }}{{ end }}
   {{ end }}
   {{ $home := "/kld/apps/porridge/" }}
-  {{ if ne $company "amazon" }}{{ $home = printf "/kld/apps/porridge/?c=%s" $company }}{{ end }}
+  {{ if ne $company $default }}{{ $home = printf "/kld/apps/porridge/?c=%s" $company }}{{ end }}
+  {{ $groupLabel := "" }}
+  {{ with $lp.group }}
+    {{ if eq . "one-arm" }}
+      {{ $groupLabel = "One Arm" }}
+    {{ else if eq . "accelerate-impact" }}
+      {{ $groupLabel = "Accelerate Impact" }}
+    {{ else }}
+      {{ $groupLabel = . }}
+    {{ end }}
+  {{ end }}
+  {{ $card := index .Site.Data.tools "porridge" }}
+  {{/* The new hero drops the Porridge link. Use it only when the frame can put that link in the toolbar. */}}
+  {{ if and $card (templates.Exists "partials/app-kit/hero.html") (templates.Exists "partials/app-kit/frame-start.html") }}
+    {{ partial "app-kit/hero.html" (dict
+      "page" .
+      "card" $card
+      "image" "/images/porridge-hero.jpg"
+      "eyebrow" $groupLabel
+      "title" $lp.name
+      "subtitle" (partial "lp-tokens.html" (dict "text" $lp.definition "principles" $principles "company" $company))
+    ) }}
+  {{ else }}
   <header class="kld-subhero" style="background-image: linear-gradient(90deg, rgba(17, 24, 39, 0.94) 0%, rgba(17, 24, 39, 0.78) 46%, rgba(17, 24, 39, 0.25) 100%), url('/images/porridge-hero.jpg');">
     {{ partial "site-navigation.html" . }}
     <div class="kld-subhero-inner">
@@ -23,6 +47,7 @@
       </div>
     </div>
   </header>
+  {{ end }}
 {{ end }}
 
 {{ define "main" }}
@@ -41,6 +66,8 @@
     {{ $teach = $teachRes | transform.Unmarshal }}
   {{ end }}
   {{ $pidx := resources.Get "data/principles/index.json" | transform.Unmarshal }}
+  {{ $default := "" }}
+  {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
   {{ $companyName := $company }}
   {{ $companySource := "" }}
   {{ range $pidx.companies }}
@@ -51,7 +78,7 @@
     {{ end }}
   {{ end }}
   {{ $home := "/kld/apps/porridge/" }}
-  {{ if ne $company "amazon" }}{{ $home = printf "/kld/apps/porridge/?c=%s" $company }}{{ end }}
+  {{ if ne $company $default }}{{ $home = printf "/kld/apps/porridge/?c=%s" $company }}{{ end }}
   {{ $i := 0 }}
   {{ range $idxN, $p := $principles }}
     {{ if eq $p.slug $slug }}{{ $i = $idxN }}{{ end }}
@@ -62,6 +89,11 @@
   {{ if lt $i (sub (len $principles) 1) }}{{ $next = index $principles (add $i 1) }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
   <article class="kld-topics-page lps-page tool-page lps-principle">
+    {{ $card := index .Site.Data.tools "porridge" }}
+    {{ $frame := and $card (templates.Exists "partials/app-kit/frame-start.html") }}
+    {{ if $frame }}
+      {{ partial "app-kit/frame-start.html" (dict "card" $card "page" $ "nameHref" $home) }}
+    {{ end }}
     <nav class="lps-jump" aria-label="All principles">
       <ol>
         {{ range $principles }}
@@ -277,6 +309,9 @@
         <span class="lps-pager-next is-empty"></span>
       {{ end }}
     </nav>
+    {{ if $frame }}
+      {{ partial "app-kit/frame-end.html" . }}
+    {{ end }}
     {{ if templates.Exists "partials/app-feedback.html" }}
       {{ partial "app-feedback.html" (dict "app" "porridge" "repo" "https://github.com/kindel/porridge") }}
     {{ end }}

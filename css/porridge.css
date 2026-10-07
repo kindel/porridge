@@ -40,6 +40,34 @@
   color: var(--kld-rust);
 }
 
+/* This file loads after chrome.css, so the rule above would restyle shared chrome. */
+.lps-page a.app-frame-name {
+  color: var(--kld-ink);
+  text-decoration: none;
+  text-underline-offset: auto;
+}
+
+.lps-page a.app-frame-name:hover {
+  color: var(--kld-rust-dark);
+  text-decoration: none;
+  text-underline-offset: auto;
+}
+
+.lps-page .app-frame-lede a,
+.lps-page .app-related a {
+  color: var(--kld-rust-dark);
+  font-weight: 600;
+  text-decoration: none;
+  text-underline-offset: auto;
+}
+
+.lps-page .app-frame-lede a:hover,
+.lps-page .app-related a:hover {
+  color: var(--kld-blue);
+  text-decoration: underline;
+  text-underline-offset: auto;
+}
+
 .lps-intro,
 .lps-index,
 .lps-section {
