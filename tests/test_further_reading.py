@@ -95,6 +95,7 @@ class FurtherReadingTest(unittest.TestCase):
         # those two. A multi-part suffix is out of scope for this data.
         cases = (
             ("https://www.aboutamazon.com/news/company-news/amazons-original-1997-letter-to-shareholders", "aboutamazon.com"),
+            # Hostname fixture. Product links to this essay use kindel.com/essays/<slug>/.
             ("https://blog.kindel.com/2023/01/08/breaking-down-innovation-invention/", "kindel.com"),
             ("https://ir.aboutamazon.com/files/doc_financials/annual/2015-Letter-to-Shareholders.PDF", "aboutamazon.com"),
             ("https://www.sec.gov/Archives/edgar/data/1018724/000119312510082914/dex991.htm", "sec.gov"),
