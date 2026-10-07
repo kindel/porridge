@@ -95,3 +95,6 @@ class FramingTest(unittest.TestCase):
         self.assertIn("a.lps-card:active", css)
         card = layout[layout.index('class="lps-card"'):layout.index("lps-card-go")]
         self.assertNotIn("<a ", card)
+        self.assertIn("UI_DEFAULTS", js)
+        self.assertIn("custom[k] || UI_DEFAULTS[k]", js)
+        self.assertNotIn("var UI = cfg.ui", js)

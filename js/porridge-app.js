@@ -7,7 +7,9 @@
   var TENSION_URL = "https://blog.kindel.com/2019/05/16/the-tension-is-intentional/";
   // Same sentences as content/porridge/_index.md. The Hugo page reads those
   // params. This standalone page has no Hugo, so the strings live here too.
-  var UI = cfg.ui || {
+  // A partial cfg.ui keeps every sentence it omits. Replacing the object
+  // wholesale would drop cardCta on an embed that set the older fields.
+  var UI_DEFAULTS = {
     heading: "These are universal leadership principles that work for any company.",
     intro: "Pick a principle. You get a deep dive you can learn from.",
     companyPrompt: "Or view a company's principles:",
@@ -15,6 +17,11 @@
     backLabel: "Back to the universal principles",
     cardCta: "Learn how to live it »"
   };
+  var custom = cfg.ui || {};
+  var UI = {};
+  Object.keys(UI_DEFAULTS).forEach(function (k) {
+    UI[k] = custom[k] || UI_DEFAULTS[k];
+  });
   var root = document.getElementById("porridge-root");
   if (!root) return;
 
