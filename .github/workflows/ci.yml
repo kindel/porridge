@@ -27,3 +27,13 @@ jobs:
       # cannot drift from what the page actually runs.
       - name: Check token expansion
         run: node scripts/check_tokens.js
+
+      # The Hugo partial is the page path. Render it and require an escaped
+      # note plus a real {lp:} link.
+      - name: Install Hugo
+        run: |
+          curl -fsSL -o /tmp/hugo.tar.gz \
+            https://github.com/gohugoio/hugo/releases/download/v0.143.1/hugo_extended_0.143.1_linux-amd64.tar.gz
+          tar -xzf /tmp/hugo.tar.gz -C /tmp hugo
+      - name: Check escaped reading notes
+        run: HUGO=/tmp/hugo node scripts/check_lp_html.js
