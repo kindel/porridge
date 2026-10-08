@@ -88,6 +88,12 @@
         </ol>
       </section>
     {{ end }}
+    {{ $amazonPrinciples := slice }}
+    {{ $genericPrinciples := slice }}
+    {{ range $pidx.companies }}
+      {{ if eq .id "amazon" }}{{ $amazonPrinciples = .principles }}{{ end }}
+      {{ if eq .id "generic" }}{{ $genericPrinciples = .principles }}{{ end }}
+    {{ end }}
     {{/* Further reading follows the company switch, including when Amazon is not the default. */}}
     {{ if $teachIdx.blog }}
     <section class="lps-section" data-company-set="amazon"{{ if ne $default "amazon" }} hidden{{ end }} aria-labelledby="lps-blog-title">
@@ -97,7 +103,7 @@
         {{ range $teachIdx.blog }}
           <li>
             <a href="{{ .url }}">{{ .title }}</a>
-            {{ with .note }}<p>{{ . }}</p>{{ end }}
+            {{ with .note }}<p>{{ partial "lp-tokens.html" (dict "text" . "principles" $amazonPrinciples "company" "amazon") }}</p>{{ end }}
             {{ $host := partial "reading-host.html" .url }}
             {{ with $host }}<p class="lps-blog-domain">{{ . }}</p>{{ end }}
           </li>
@@ -116,7 +122,7 @@
         {{ range $genTeach.blog }}
           <li>
             <a href="{{ .url }}">{{ .title }}</a>
-            {{ with .note }}<p>{{ . }}</p>{{ end }}
+            {{ with .note }}<p>{{ partial "lp-tokens.html" (dict "text" . "principles" $genericPrinciples "company" "generic") }}</p>{{ end }}
             {{ $host := partial "reading-host.html" .url }}
             {{ with $host }}<p class="lps-blog-domain">{{ . }}</p>{{ end }}
           </li>

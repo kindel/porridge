@@ -256,7 +256,7 @@
         "<h2 id=\"lps-blog-title\">Sources and essays on this principle.</h2>" +
         "<ul class=\"lps-blog\">" +
         teach.blog.map(function (item) {
-          var note = item.note ? "<p>" + esc(item.note) + "</p>" : "";
+          var note = item.note ? "<p>" + expandLp(item.note, principles, companyId) + "</p>" : "";
           var host = readingHost(item.url);
           var domain = host ? "<p class=\"lps-blog-domain\">" + esc(host) + "</p>" : "";
           return "<li><a href=\"" + esc(item.url) + "\">" + esc(item.title) + "</a>" + note + domain + "</li>";
