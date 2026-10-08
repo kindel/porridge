@@ -62,14 +62,29 @@ class FurtherReadingTest(unittest.TestCase):
 
     def test_domain_line_renders_under_each_note(self):
         # Note paragraph, then the host line. The host is plain text, not a link.
+        # The note goes through the same token partial as a Related note.
+        # The principle page uses the page's company. The set page uses the
+        # company that owns that reading list.
         hugo_item = re.compile(
             r'<a href="\{\{ \.url \}\}">\{\{ \.title \}\}</a>\s*'
-            r'\{\{ with \.note \}\}<p>\{\{ \. \}\}</p>\{\{ end \}\}\s*'
+            r'\{\{ with \.note \}\}<p>\{\{ partial "lp-tokens\.html" '
+            r'\(dict "text" \. "principles" (?P<principles>\S+) "company" (?P<company>\S+)\) \}\}</p>\{\{ end \}\}\s*'
             r'\{\{ \$host := partial "reading-host\.html" \.url \}\}\s*'
             r'\{\{ with \$host \}\}<p class="lps-blog-domain">\{\{ \. \}\}</p>\{\{ end \}\}'
         )
+        plain = "{{ with .note }}<p>{{ . }}</p>{{ end }}"
+        self.assertNotIn(plain, self.single)
+        self.assertNotIn(plain, self.list)
+        single_notes = list(hugo_item.finditer(self.single))
+        self.assertEqual(len(single_notes), 1, "single.html")
+        self.assertEqual(single_notes[0].group("principles"), "$principles")
+        self.assertEqual(single_notes[0].group("company"), "$company")
+        list_notes = list(hugo_item.finditer(self.list))
+        self.assertEqual(
+            [(m.group("principles"), m.group("company")) for m in list_notes],
+            [("$amazonPrinciples", '"amazon"'), ("$genericPrinciples", '"generic"')],
+        )
         for name, src in (("single.html", self.single), ("list.html", self.list)):
-            self.assertIsNotNone(hugo_item.search(src), name)
             self.assertNotIn('<a class="lps-blog-domain"', src, name)
             self.assertNotIn("<a class='lps-blog-domain'", src, name)
 
@@ -80,7 +95,7 @@ class FurtherReadingTest(unittest.TestCase):
         self.assertIn("co.uk", host)
 
         js_item = (
-            '          var note = item.note ? "<p>" + esc(item.note) + "</p>" : "";\n'
+            '          var note = item.note ? "<p>" + expandLp(item.note, principles, companyId) + "</p>" : "";\n'
             '          var host = readingHost(item.url);\n'
             '          var domain = host ? "<p class=\\"lps-blog-domain\\">" + esc(host) + "</p>" : "";\n'
             '          return "<li><a href=\\"" + esc(item.url) + "\\">" + esc(item.title) + "</a>" + note + domain + "</li>";'

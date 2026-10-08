@@ -277,7 +277,7 @@
         {{ range . }}
           <li>
             <a href="{{ .url }}">{{ .title }}</a>
-            {{ with .note }}<p>{{ . }}</p>{{ end }}
+            {{ with .note }}<p>{{ partial "lp-tokens.html" (dict "text" . "principles" $principles "company" $company) }}</p>{{ end }}
             {{ $host := partial "reading-host.html" .url }}
             {{ with $host }}<p class="lps-blog-domain">{{ . }}</p>{{ end }}
           </li>
