@@ -4,7 +4,7 @@
   var RECORD = cfg.principlesRecord || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/{company}/{slug}.json";
   var FACETS = cfg.facetsJson || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/facets.json";
   var TEACH = cfg.teaching || "https://cdn.jsdelivr.net/gh/kindel/principles@main/data/teaching/amazon/{slug}.json";
-  var TENSION_URL = "https://blog.kindel.com/2019/05/16/the-tension-is-intentional/";
+  var TENSION_URL = "https://kindel.com/essays/the-tension-is-intentional/";
   // Same sentences as content/porridge/_index.md. The Hugo page reads those
   // params. This standalone page has no Hugo, so the strings live here too.
   // A partial cfg.ui keeps every sentence it omits. Replacing the object
