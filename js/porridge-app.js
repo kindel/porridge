@@ -53,6 +53,12 @@
     if (swapped === TEACH) return "";
     return swapped.replace("{slug}", slug);
   }
+  function loadSetReading(companyId) {
+    var turl = teachUrl(companyId, "index");
+    if (!turl) return Promise.resolve(null);
+    return fetch(turl).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+  }
+  var listRequest = 0;
   // Emphasis only. Escape first so the preamble cannot inject markup.
   function inlineMd(md) {
     var s = esc(md || "");
@@ -96,7 +102,7 @@
     return out;
   }
 
-  function renderList(bank, companyId) {
+  function renderList(bank, companyId, teachIdx) {
     var companies = bank.companies || [];
     var def = companies[0] && companies[0].id;
     if (!companyId || !companies.some(function (c) { return c.id === companyId; })) companyId = def;
@@ -115,6 +121,21 @@
       return "<li><a class=\"lps-card\" href=\"" + q + "\"><span class=\"lps-card-num\">" + esc(p.sort) + "</span>" +
         group + "<h3>" + esc(p.name) + "</h3><p>" + esc(p.definition || "") + "</p><p class=\"lps-card-go\">" + esc(UI.cardCta) + "</p></a></li>";
     }).join("");
+    var principles = co.principles || [];
+    var blogHtml = "";
+    if (teachIdx && teachIdx.blog && teachIdx.blog.length) {
+      blogHtml = "<section class=\"lps-section\" aria-labelledby=\"lps-blog-title\">" +
+        "<p class=\"kld-section-label\">Further reading</p>" +
+        "<h2 id=\"lps-blog-title\">Sources and essays on the whole set.</h2>" +
+        "<ul class=\"lps-blog\">" +
+        teachIdx.blog.map(function (item) {
+          var note = item.note ? "<p>" + expandLp(item.note, principles, companyId) + "</p>" : "";
+          var host = readingHost(item.url);
+          var domain = host ? "<p class=\"lps-blog-domain\">" + esc(host) + "</p>" : "";
+          return "<li><a href=\"" + esc(item.url) + "\">" + esc(item.title) + "</a>" + note + domain + "</li>";
+        }).join("") +
+        "</ul></section>";
+    }
     root.innerHTML =
       "<section class=\"lps-intro\">" +
       "<p class=\"kld-section-label\">How to use it</p>" +
@@ -130,13 +151,18 @@
       "<p class=\"kld-section-label\">The set</p>" +
       "<h2>" + setTitle + "</h2>" +
       (co.preamble ? "<div class=\"lps-preamble\"><p>" + inlineMd(co.preamble) + "</p></div>" : "") +
-      "<ol class=\"lps-card-list\">" + cards + "</ol></section>";
+      "<ol class=\"lps-card-list\">" + cards + "</ol></section>" +
+      blogHtml;
     var companySel = document.getElementById("lps-company");
     if (companyId === def) companySel.value = "";
     companySel.addEventListener("change", function () {
       var id = this.value || def;
       setParams({ c: id === def ? "" : id, p: "" });
-      renderList(bank, id);
+      var req = ++listRequest;
+      loadSetReading(id).then(function (idx) {
+        if (req !== listRequest) return;
+        renderList(bank, id, idx);
+      });
     });
   }
 
@@ -323,7 +349,9 @@
             }).catch(function () {}));
           });
         });
-        return Promise.all(pending).then(function () { renderList(bank, companyId); });
+        return Promise.all([Promise.all(pending), loadSetReading(companyId)]).then(function (pair) {
+          renderList(bank, companyId, pair[1]);
+        });
       }
       if (!p) {
         return showList(c);
