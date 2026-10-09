@@ -64,6 +64,7 @@ class FurtherReadingTest(unittest.TestCase):
         self.assertIn('<h2 id=\\"lps-blog-title\\">%s</h2>'
                       % SET_SUBHEAD, self.app)
         self.assertIn('teachUrl(companyId, "index")', self.app)
+        self.assertIn("if (req !== listRequest) return", self.app)
 
     def test_domain_line_renders_under_each_note(self):
         # Note paragraph, then the host line. The host is plain text, not a link.

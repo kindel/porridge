@@ -58,6 +58,7 @@
     if (!turl) return Promise.resolve(null);
     return fetch(turl).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
   }
+  var listRequest = 0;
   // Emphasis only. Escape first so the preamble cannot inject markup.
   function inlineMd(md) {
     var s = esc(md || "");
@@ -157,7 +158,11 @@
     companySel.addEventListener("change", function () {
       var id = this.value || def;
       setParams({ c: id === def ? "" : id, p: "" });
-      loadSetReading(id).then(function (idx) { renderList(bank, id, idx); });
+      var req = ++listRequest;
+      loadSetReading(id).then(function (idx) {
+        if (req !== listRequest) return;
+        renderList(bank, id, idx);
+      });
     });
   }
 
