@@ -133,8 +133,8 @@
     {{ if $frame }}
       {{ partial "app-kit/frame-end.html" . }}
     {{ end }}
-    <p class="lps-add-note">To add another company's set, <a href="https://github.com/kindel/principles/issues/new">open an issue on kindel/principles</a>.</p>
     {{ if templates.Exists "partials/app-feedback.html" }}
+      <p class="lps-fix-note">See something wrong or missing? <a href="/kld/apps/facet/">Fix it in Facet</a>.</p>
       {{ partial "app-feedback.html" (dict "app" "porridge" "repo" "https://github.com/kindel/porridge") }}
     {{ end }}
   </article>
