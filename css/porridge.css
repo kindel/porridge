@@ -567,10 +567,27 @@ a.lps-card:hover .lps-card-go {
 .lps-standalone-header a:hover { color: var(--kld-rust); }
 #porridge-root { max-width: 46rem; margin: 0 auto 4rem; padding: 0 1.25rem; }
 
-.lps-add-note {
-  margin-top: 2.5rem;
-  color: var(--kld-muted);
-  font-size: 0.96rem;
+.lps-fix-note {
+  margin: 2.5rem 0 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--kld-sage, #dce7dc);
+  text-align: center;
+  color: var(--kld-muted, #59636f);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+.lps-fix-note a {
+  color: var(--kld-blue, #24445f);
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+.lps-fix-note a:hover {
+  color: var(--kld-rust, #b5532f);
+}
+.lps-fix-note + .app-feedback-section {
+  margin-top: 0.85rem;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .lps-row-source {

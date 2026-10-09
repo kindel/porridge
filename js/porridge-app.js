@@ -130,8 +130,7 @@
       "<p class=\"kld-section-label\">The set</p>" +
       "<h2>" + setTitle + "</h2>" +
       (co.preamble ? "<div class=\"lps-preamble\"><p>" + inlineMd(co.preamble) + "</p></div>" : "") +
-      "<ol class=\"lps-card-list\">" + cards + "</ol></section>" +
-      "<p class=\"lps-add-note\">To add another company's set, <a href=\"https://github.com/kindel/principles/issues/new\">open an issue on kindel/principles</a>.</p>";
+      "<ol class=\"lps-card-list\">" + cards + "</ol></section>";
     var companySel = document.getElementById("lps-company");
     if (companyId === def) companySel.value = "";
     companySel.addEventListener("change", function () {
