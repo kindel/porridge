@@ -324,7 +324,12 @@
       {{ partial "app-kit/frame-end.html" . }}
     {{ end }}
     {{ if templates.Exists "partials/app-feedback.html" }}
-      {{ partial "app-feedback.html" (dict "app" "porridge" "repo" "https://github.com/kindel/porridge" "facet" true) }}
+      {{ $feedback := partial "app-feedback.html" (dict "app" "porridge" "repo" "https://github.com/kindel/porridge" "facet" true) }}
+      {{ $html := printf "%s" $feedback }}
+      {{ if not (in $html "app-facet-fix") }}
+      <p class="lps-fix-note">See something wrong or missing? <a href="/kld/apps/facet/">Fix it in Facet</a>.</p>
+      {{ end }}
+      {{ $feedback | safeHTML }}
     {{ end }}
   </article>
 {{ end }}
