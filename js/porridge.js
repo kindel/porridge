@@ -3,6 +3,11 @@
   if (!sel) return;
   var fallback = sel.getAttribute("data-default") || "";
 
+  function kld(name, params) {
+    if (typeof window.kldTrack !== "function") return;
+    window.kldTrack(name, params);
+  }
+
   function known(id) {
     if (!id) return false;
     if (id === fallback) return true;
@@ -32,8 +37,23 @@
     } catch (e) {}
   }
 
-  apply(fromUrl());
+  kld("app_view", { app: "porridge" });
+  var current = fromUrl();
+  apply(current);
+  if (current) kld("kld_company", { app: "porridge", company: current, source: "url" });
   sel.addEventListener("change", function () {
-    apply(this.value || fallback);
+    var next = this.value || fallback;
+    if (!known(next)) next = fallback;
+    var prev = current;
+    apply(next);
+    if (next && next !== prev) {
+      kld("kld_company", {
+        app: "porridge",
+        company: next,
+        previous_company: prev,
+        source: "picker"
+      });
+    }
+    current = next;
   });
 })();
