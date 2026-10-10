@@ -134,8 +134,7 @@
       {{ partial "app-kit/frame-end.html" . }}
     {{ end }}
     {{ if templates.Exists "partials/app-feedback.html" }}
-      <p class="lps-fix-note">See something wrong or missing? <a href="/kld/apps/facet/">Fix it in Facet</a>.</p>
-      {{ partial "app-feedback.html" (dict "app" "porridge" "repo" "https://github.com/kindel/porridge") }}
+      {{ partial "app-feedback.html" (dict "app" "porridge" "repo" "https://github.com/kindel/porridge" "facet" true) }}
     {{ end }}
   </article>
   <script src="{{ "js/porridge.js" | relURL }}"></script>
