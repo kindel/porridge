@@ -171,6 +171,9 @@
           previous_company: prev,
           source: "picker"
         });
+        // The listener stays until the reading request rerenders the list.
+        // A second pick before that must see this id, not the one from render.
+        companyId = id;
       }
       var req = ++listRequest;
       loadSetReading(id).then(function (idx) {
@@ -337,6 +340,7 @@
   }
 
   function boot() {
+    kld("app_view", { app: "porridge" });
     Promise.all([
       fetch(INDEX).then(function (r) { return r.json(); }),
       fetch(FACETS).then(function (r) { return r.ok ? r.json() : { facets: [] }; }).catch(function () { return { facets: [] }; })
@@ -347,7 +351,6 @@
       var def = companies[0] && companies[0].id;
       var c = param("c") || def;
       if (!companies.some(function (x) { return x.id === c; })) c = def;
-      kld("app_view", { app: "porridge" });
       if (c) kld("kld_company", { app: "porridge", company: c, source: "url" });
       var p = param("p");
       // The index carries no definitions, so backfill them from the records
