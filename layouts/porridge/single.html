@@ -328,4 +328,17 @@
       {{ partial "app-feedback.html" (dict "app" "porridge" "repo" "https://github.com/kindel/porridge") }}
     {{ end }}
   </article>
+  <script src="{{ "js/app-kit/analytics.js" | relURL }}"></script>
+  <script>
+    if (typeof window.kldTrack === "function") {
+      window.kldTrack("app_view", { app: "porridge" });
+      {{ if $company }}
+      window.kldTrack("kld_company", {
+        app: "porridge",
+        company: {{ $company | jsonify }},
+        source: "url"
+      });
+      {{ end }}
+    }
+  </script>
 {{ end }}

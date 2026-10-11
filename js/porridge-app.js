@@ -25,6 +25,11 @@
   var root = document.getElementById("porridge-root");
   if (!root) return;
 
+  function kld(name, params) {
+    if (typeof window.kldTrack !== "function") return;
+    window.kldTrack(name, params);
+  }
+
   function param(name) {
     try { return new URL(window.location.href).searchParams.get(name) || ""; }
     catch (e) { return ""; }
@@ -156,8 +161,20 @@
     var companySel = document.getElementById("lps-company");
     if (companyId === def) companySel.value = "";
     companySel.addEventListener("change", function () {
+      var prev = companyId;
       var id = this.value || def;
       setParams({ c: id === def ? "" : id, p: "" });
+      if (id && id !== prev) {
+        kld("kld_company", {
+          app: "porridge",
+          company: id,
+          previous_company: prev,
+          source: "picker"
+        });
+        // The listener stays until the reading request rerenders the list.
+        // A second pick before that must see this id, not the one from render.
+        companyId = id;
+      }
       var req = ++listRequest;
       loadSetReading(id).then(function (idx) {
         if (req !== listRequest) return;
@@ -323,6 +340,7 @@
   }
 
   function boot() {
+    kld("app_view", { app: "porridge" });
     Promise.all([
       fetch(INDEX).then(function (r) { return r.json(); }),
       fetch(FACETS).then(function (r) { return r.ok ? r.json() : { facets: [] }; }).catch(function () { return { facets: [] }; })
@@ -333,6 +351,7 @@
       var def = companies[0] && companies[0].id;
       var c = param("c") || def;
       if (!companies.some(function (x) { return x.id === c; })) c = def;
+      if (c) kld("kld_company", { app: "porridge", company: c, source: "url" });
       var p = param("p");
       // The index carries no definitions, so backfill them from the records
       // before any list render, including the fallback after a failed
