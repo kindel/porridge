@@ -339,7 +339,7 @@
       {{ if $company }}
       window.kldTrack("kld_company", {
         app: "porridge",
-        company: {{ $company | jsonify }},
+        company: {{ $company }},
         source: "url"
       });
       {{ end }}
