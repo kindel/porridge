@@ -19,6 +19,9 @@ class AnalyticsLayoutTest(unittest.TestCase):
         self.assertIn('src="{{ "js/app-kit/analytics.js" | relURL }}"', single)
         self.assertIn('kldTrack("app_view", { app: "porridge" })', single)
         self.assertIn('kldTrack("kld_company"', single)
-        self.assertIn("company: {{ $company | jsonify }}", single)
+        # html/template already quotes a value inside <script>. jsonify on top
+        # of that sent the company to GA as "\"amazon\"", quote marks included.
+        self.assertIn("company: {{ $company }},", single)
+        self.assertNotIn("$company | jsonify", single)
         self.assertIn('source: "url"', single)
         self.assertLess(single.index("analytics.js"), single.index('kldTrack("app_view"'))

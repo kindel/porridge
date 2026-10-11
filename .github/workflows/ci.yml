@@ -37,3 +37,5 @@ jobs:
           tar -xzf /tmp/hugo.tar.gz -C /tmp hugo
       - name: Check escaped reading notes
         run: HUGO=/tmp/hugo node scripts/check_lp_html.js
+      - name: Check the company sent to GA
+        run: HUGO=/tmp/hugo node scripts/check_analytics_html.js
