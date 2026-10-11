@@ -10,8 +10,8 @@
   // A partial cfg.ui keeps every sentence it omits. Replacing the object
   // wholesale would drop cardCta on an embed that set the older fields.
   var UI_DEFAULTS = {
-    heading: "These are universal leadership principles that work for any company.",
-    intro: "Pick a principle. You get a deep dive you can learn from.",
+    heading: "There is a set of universal leadership principles.",
+    intro: "Porridge lets you walk any one of them as Under, Just Right, or Over, to see how you or someone you coach lives it. Or pick a company and use Porridge on that company's principles.",
     companyPrompt: "Or view a company's principles:",
     companyPlaceholder: "Choose a company",
     backLabel: "Back to the universal principles",
@@ -143,7 +143,6 @@
     }
     root.innerHTML =
       "<section class=\"lps-intro\">" +
-      "<p class=\"kld-section-label\">How to use it</p>" +
       "<h2>" + esc(UI.heading) + "</h2>" +
       "<p>" + esc(UI.intro) + "</p>" +
       "</section>" +

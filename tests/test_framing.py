@@ -12,7 +12,7 @@ import unittest
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PROMPT = "Or view a company's principles:"
-HEADING = "These are universal leadership principles that work for any company."
+HEADING = "There is a set of universal leadership principles."
 BACK = "Back to the universal principles"
 CARD = "Learn how to live it »"
 
@@ -98,3 +98,12 @@ class FramingTest(unittest.TestCase):
         self.assertIn("UI_DEFAULTS", js)
         self.assertIn("custom[k] || UI_DEFAULTS[k]", js)
         self.assertNotIn("var UI = cfg.ui", js)
+
+    def test_the_explainer_and_how_to_sit_inside_the_card(self):
+        listing = read("layouts", "porridge", "list.html")
+        start = listing.index('partial "app-kit/frame-start.html"')
+        self.assertLess(start, listing.index('partial "app-kit/summary.html"'))
+        self.assertLess(start, listing.index('partial "app-kit/related.html"'))
+        self.assertLess(start, listing.index('class="lps-intro"'))
+        self.assertNotIn("How to use it", listing)
+        self.assertNotIn("How to use it", read("js", "porridge-app.js"))

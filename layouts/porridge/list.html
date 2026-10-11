@@ -32,20 +32,18 @@
   <article class="kld-topics-page lps-page tool-page">
     {{ $card := index .Site.Data.tools "porridge" }}
     {{ $frame := and $card (templates.Exists "partials/app-kit/frame-start.html") }}
+    {{/* The explainer, related essays, and how-to sit inside the app card. */}}
     {{ if $frame }}
+      {{ partial "app-kit/frame-start.html" (dict "card" $card "page" $) }}
       {{ partial "app-kit/summary.html" $card }}
       {{ partial "app-kit/related.html" $card }}
     {{ else if and $card (templates.Exists "partials/tool-header.html") }}
       {{ partial "tool-header.html" $card }}
     {{ end }}
     <section class="lps-intro" aria-labelledby="lps-how-title">
-      <p class="kld-section-label">How to use it</p>
       <h2 id="lps-how-title">{{ .Params.heading }}</h2>
       <p>{{ .Params.intro }}</p>
     </section>
-    {{ if $frame }}
-      {{ partial "app-kit/frame-start.html" (dict "card" $card "page" $) }}
-    {{ end }}
     <section class="lps-or" aria-labelledby="lps-company-label">
       <label class="lps-or-label" id="lps-company-label" for="lps-company">{{ .Params.companyPrompt }}</label>
       <select id="lps-company" class="lps-select" data-default="{{ $default }}" aria-labelledby="lps-company-label">
