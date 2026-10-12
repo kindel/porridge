@@ -532,20 +532,77 @@ a.lps-card:hover .lps-card-go {
   text-transform: uppercase;
 }
 
-.lps-select {
-  display: block;
-  max-width: 22rem;
+/* Company tiles: always visible, one checked. Logos sit in a fixed box so
+   wide wordmarks and square marks read at the same weight. */
+.lps-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.6rem;
   margin: 0 0 1rem;
-  padding: 0.55rem 0.7rem;
+}
+
+.lps-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 5.25rem;
+  padding: 0.7rem 0.6rem;
   border: 1px solid var(--kld-line, #d5d8dc);
+  border-radius: 6px;
   background: #fff;
   color: var(--kld-ink, #17202b);
   font: inherit;
+  cursor: pointer;
+  text-align: center;
 }
 
-.lps-select:focus {
+.lps-tile:hover {
+  border-color: var(--kld-ink, #17202b);
+}
+
+.lps-tile:focus-visible {
   outline: 2px solid var(--kld-ink, #17202b);
   outline-offset: 2px;
+}
+
+.lps-tile[aria-checked="true"] {
+  border-color: var(--kld-rust, #b5532f);
+  box-shadow: inset 0 0 0 1px var(--kld-rust, #b5532f);
+  background: #fdf6f3;
+}
+
+.lps-tile-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.75rem;
+}
+
+.lps-tile-logo img {
+  display: block;
+  max-width: 6.5rem;
+  max-height: 1.75rem;
+  width: auto;
+  height: auto;
+}
+
+.lps-tile-name {
+  font-size: 0.85rem;
+  line-height: 1.25;
+}
+
+.lps-tile--name .lps-tile-name,
+.lps-tile--universal .lps-tile-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+@media (max-width: 30rem) {
+  .lps-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .lps-card-group {

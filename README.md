@@ -20,17 +20,29 @@ python3 -m http.server
 
 Open http://127.0.0.1:8000/
 
-The standalone page fetches `kindel/principles` from jsDelivr. A host that already serves the JSON can override the URLs by setting `window.PORRIDGE` before `js/porridge-app.js` loads:
+The standalone page fetches `kindel/principles` from jsDelivr. A host that already serves the JSON can override the URLs, and can point the company tiles at its own logo files, by setting `window.PORRIDGE` before `js/porridge-app.js` loads:
 
 ```html
 <script>
   window.PORRIDGE = {
     principlesIndex: "/data/principles/index.json",
     principlesRecord: "/data/principles/{company}/{slug}.json",
-    teaching: "/data/principles/teaching/amazon/{slug}.json"
+    teaching: "/data/principles/teaching/amazon/{slug}.json",
+    logoBase: "css/logos/",
+    logos: {
+      amazon: "amazon.svg",
+      arm: "arm.svg",
+      "blue-origin": "blue-origin.svg",
+      coupang: "coupang.svg",
+      "delivery-hero": "delivery-hero.svg",
+      gitlab: "gitlab.svg",
+      toyota: "toyota.svg"
+    }
   };
 </script>
 ```
+
+`logoBase` is a string. It defaults to `css/logos/`. `logos` maps a company id to a filename under that base. The map above is the default. A company omitted from `logos` gets a name-only tile.
 
 ## URLs
 

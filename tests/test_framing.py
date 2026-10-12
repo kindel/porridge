@@ -11,7 +11,8 @@ import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-PROMPT = "Or view a company's principles:"
+PROMPT = "Or, you can use Porridge focused on how any of these companies define their principles."
+UNIVERSAL = "Universal principles"
 HEADING = "There is a set of universal leadership principles."
 BACK = "Back to the universal principles"
 CARD = "Learn how to live it »"
@@ -35,18 +36,43 @@ class FramingTest(unittest.TestCase):
         self.assertNotIn("Pick the company whose principles fit you", layout)
         self.assertNotIn(">Any Company<", layout)
 
-    def test_the_company_menu_omits_the_default_set(self):
+    def test_the_company_tiles_are_a_radio_group(self):
         layout = read("layouts", "porridge", "list.html")
-        self.assertIn('ne .id $default', layout)
-        self.assertIn('data-default="{{ $default }}"', layout)
+        app = read("js", "porridge-app.js")
         js = read("js", "porridge.js")
+        for src in (layout, app):
+            self.assertIn("role=", src)
+            self.assertIn("radiogroup", src)
+            self.assertIn("aria-checked", src)
+            self.assertNotIn("<select", src)
+            self.assertNotIn("<option", src)
+        self.assertIn('data-default="{{ $default }}"', layout)
+        self.assertIn(".Params.universalLabel", layout)
         self.assertIn("data-default", js)
-        self.assertNotIn("options[0]", js)
+        for src in (js, app):
+            self.assertIn('source: "picker"', src)
+            self.assertIn("replaceState", src)
+            self.assertIn("ArrowRight", src)
+        self.assertIn(UNIVERSAL, read("content", "porridge", "_index.md"))
+        self.assertIn(UNIVERSAL, app)
+
+    def test_every_logo_is_a_local_file(self):
+        import re
+        content = read("content", "porridge", "_index.md")
+        app = read("js", "porridge-app.js")
+        block = content[content.index("logos:"):content.index("cardCta")]
+        pairs = re.findall(r"^  ([a-z0-9-]+): (\S+)$", block, re.M)
+        self.assertTrue(pairs)
+        for cid, name in pairs:
+            self.assertTrue(os.path.isfile(os.path.join(ROOT, "css", "logos", name)), name)
+            self.assertIn(name, app)
+        self.assertNotIn("http", block)
+        self.assertNotIn("\u2014", content.split("---")[1])
 
     def test_standalone_copy_matches_the_content_file(self):
         content = read("content", "porridge", "_index.md")
         js = read("js", "porridge-app.js")
-        for sentence in (PROMPT, HEADING, BACK):
+        for sentence in (PROMPT, HEADING, BACK, UNIVERSAL):
             self.assertIn(sentence, content)
             self.assertIn(sentence, js)
         self.assertNotIn("Pick the company whose principles fit you", js)

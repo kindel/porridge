@@ -44,16 +44,25 @@
       <h2 id="lps-how-title">{{ .Params.heading }}</h2>
       <p>{{ .Params.intro }}</p>
     </section>
+    {{/* Company tiles. A radio group: one tile is always checked, and the
+         universal tile is the way back. js/porridge.js wires the clicks. */}}
     <section class="lps-or" aria-labelledby="lps-company-label">
-      <label class="lps-or-label" id="lps-company-label" for="lps-company">{{ .Params.companyPrompt }}</label>
-      <select id="lps-company" class="lps-select" data-default="{{ $default }}" aria-labelledby="lps-company-label">
-        <option value="">{{ .Params.companyPlaceholder }}</option>
+      <p class="lps-or-label" id="lps-company-label">{{ .Params.companyPrompt }}</p>
+      <div id="lps-company" class="lps-tiles" role="radiogroup" aria-labelledby="lps-company-label" data-default="{{ $default }}">
         {{ range $pidx.companies }}
-          {{ if ne .id $default }}
-            <option value="{{ .id }}">{{ .name }}</option>
-          {{ end }}
+          {{ $co := . }}
+          {{ $isDef := eq .id $default }}
+          {{ $logo := index ($.Params.logos | default dict) .id }}
+          <button type="button" class="lps-tile{{ if $isDef }} lps-tile--universal{{ end }}{{ if not $logo }} lps-tile--name{{ end }}" role="radio" data-company="{{ .id }}" aria-label="{{ if $isDef }}{{ $.Params.universalLabel }}{{ else }}{{ .name }}{{ end }}" aria-checked="{{ if $isDef }}true{{ else }}false{{ end }}" tabindex="{{ if $isDef }}0{{ else }}-1{{ end }}">
+            {{ if $isDef }}
+              <span class="lps-tile-name">{{ $.Params.universalLabel }}</span>
+            {{ else }}
+              {{ with $logo }}<span class="lps-tile-logo"><img src="{{ printf "css/logos/%s" . | relURL }}" alt="{{ $co.name }} logo"></span>{{ end }}
+              <span class="lps-tile-name">{{ .name }}</span>
+            {{ end }}
+          </button>
         {{ end }}
-      </select>
+      </div>
     </section>
     {{ range $pidx.companies }}
       {{ $co := . }}
