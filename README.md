@@ -34,6 +34,7 @@ The standalone page fetches `kindel/principles` from jsDelivr. A host that alrea
       arm: "arm.svg",
       "blue-origin": "blue-origin.svg",
       coupang: "coupang.svg",
+      dawn: "dawn.png",
       "delivery-hero": "delivery-hero.svg",
       gitlab: "gitlab.svg",
       toyota: "toyota.svg"
