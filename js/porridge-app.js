@@ -11,11 +11,24 @@
   // wholesale would drop cardCta on an embed that set the older fields.
   var UI_DEFAULTS = {
     heading: "There is a set of universal leadership principles.",
-    intro: "Porridge lets you walk any one of them as Under, Just Right, or Over, to see how you or someone you coach lives it. Or pick a company and use Porridge on that company's principles.",
-    companyPrompt: "Or view a company's principles:",
-    companyPlaceholder: "Choose a company",
+    intro: "Porridge lets you walk any one of them as Under, Just Right, or Over, to see how you or someone you coach lives it.",
+    companyPrompt: "Or, you can use Porridge focused on how any of these companies define their principles.",
+    universalLabel: "Universal principles",
     backLabel: "Back to the universal principles",
     cardCta: "Learn how to live it »"
+  };
+  // Same map as logos in content/porridge/_index.md. Files live in css/logos/.
+  // A company without an entry gets a name-only tile.
+  var LOGO_BASE = cfg.logoBase || "css/logos/";
+  var LOGOS = cfg.logos || {
+    amazon: "amazon.svg",
+    arm: "arm.svg",
+    "blue-origin": "blue-origin.svg",
+    coupang: "coupang.svg",
+    dawn: "dawn.png",
+    "delivery-hero": "delivery-hero.svg",
+    gitlab: "gitlab.svg",
+    toyota: "toyota.svg"
   };
   var custom = cfg.ui || {};
   var UI = {};
@@ -112,10 +125,19 @@
     var def = companies[0] && companies[0].id;
     if (!companyId || !companies.some(function (c) { return c.id === companyId; })) companyId = def;
     var co = companies.filter(function (c) { return c.id === companyId; })[0];
-    var opts = "<option value=\"\">" + esc(UI.companyPlaceholder) + "</option>" +
-      companies.filter(function (c) { return c.id !== def; }).map(function (c) {
-        return "<option value=\"" + esc(c.id) + "\"" + (c.id === companyId ? " selected" : "") + ">" + esc(c.name) + "</option>";
-      }).join("");
+    var tiles = companies.map(function (c) {
+      var isDef = c.id === def;
+      var on = c.id === companyId;
+      var logo = isDef ? "" : (LOGOS[c.id] || "");
+      var label = isDef ? UI.universalLabel : c.name;
+      var cls = "lps-tile" + (isDef ? " lps-tile--universal" : "") + (!isDef && !logo ? " lps-tile--name" : "");
+      var img = logo
+        ? "<span class=\"lps-tile-logo\"><img src=\"" + esc(LOGO_BASE + logo) + "\" alt=\"" + esc(c.name) + " logo\"></span>"
+        : "";
+      return "<button type=\"button\" class=\"" + cls + "\" role=\"radio\" data-company=\"" + esc(c.id) + "\"" +
+        " aria-label=\"" + esc(label) + "\" aria-checked=\"" + (on ? "true" : "false") + "\" tabindex=\"" + (on ? "0" : "-1") + "\">" +
+        img + "<span class=\"lps-tile-name\">" + esc(label) + "</span></button>";
+    }).join("");
     var setTitle = (companyId === def ? "" : esc(co.name) + " ") + esc(co.set) + ", in teaching order.";
     var back = companyId === def ? "" :
       "<p class=\"lps-back\"><a href=\"?\">" + esc(UI.backLabel) + "</a></p>";
@@ -147,8 +169,8 @@
       "<p>" + esc(UI.intro) + "</p>" +
       "</section>" +
       "<section class=\"lps-or\">" +
-      "<label class=\"lps-or-label\" for=\"lps-company\">" + esc(UI.companyPrompt) + "</label>" +
-      "<select id=\"lps-company\" class=\"lps-select\" data-default=\"" + esc(def) + "\">" + opts + "</select>" +
+      "<p class=\"lps-or-label\" id=\"lps-company-label\">" + esc(UI.companyPrompt) + "</p>" +
+      "<div id=\"lps-company\" class=\"lps-tiles\" role=\"radiogroup\" aria-labelledby=\"lps-company-label\" data-default=\"" + esc(def) + "\">" + tiles + "</div>" +
       "</section>" +
       "<section class=\"lps-index\">" +
       back +
@@ -157,27 +179,51 @@
       (co.preamble ? "<div class=\"lps-preamble\"><p>" + inlineMd(co.preamble) + "</p></div>" : "") +
       "<ol class=\"lps-card-list\">" + cards + "</ol></section>" +
       blogHtml;
-    var companySel = document.getElementById("lps-company");
-    if (companyId === def) companySel.value = "";
-    companySel.addEventListener("change", function () {
+    var tileEls = Array.prototype.slice.call(root.querySelectorAll("#lps-company [data-company]"));
+    function choose(id, focus) {
       var prev = companyId;
-      var id = this.value || def;
+      if (!id) id = def;
+      tileEls.forEach(function (t) {
+        var on = t.getAttribute("data-company") === id;
+        t.setAttribute("aria-checked", on ? "true" : "false");
+        t.tabIndex = on ? 0 : -1;
+      });
       setParams({ c: id === def ? "" : id, p: "" });
-      if (id && id !== prev) {
-        kld("kld_company", {
-          app: "porridge",
-          company: id,
-          previous_company: prev,
-          source: "picker"
-        });
-        // The listener stays until the reading request rerenders the list.
-        // A second pick before that must see this id, not the one from render.
-        companyId = id;
-      }
+      if (id === prev) return;
+      kld("kld_company", {
+        app: "porridge",
+        company: id,
+        previous_company: prev,
+        source: "picker"
+      });
+      // The listeners stay until the reading request rerenders the list.
+      // A second pick before that must see this id, not the one from render.
+      companyId = id;
       var req = ++listRequest;
       loadSetReading(id).then(function (idx) {
         if (req !== listRequest) return;
         renderList(bank, id, idx);
+        if (!focus) return;
+        // The rerender replaces the tiles. Keep focus on the chosen one.
+        var again = root.querySelector("#lps-company [data-company=\"" + id + "\"]");
+        if (again) again.focus();
+      });
+    }
+    tileEls.forEach(function (t, i) {
+      t.addEventListener("click", function () {
+        choose(t.getAttribute("data-company"), true);
+      });
+      // Radio group keys: arrows move and select, Home and End jump.
+      t.addEventListener("keydown", function (e) {
+        var n = -1;
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") n = (i + 1) % tileEls.length;
+        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") n = (i - 1 + tileEls.length) % tileEls.length;
+        else if (e.key === "Home") n = 0;
+        else if (e.key === "End") n = tileEls.length - 1;
+        if (n < 0) return;
+        e.preventDefault();
+        tileEls[n].focus();
+        choose(tileEls[n].getAttribute("data-company"), true);
       });
     });
   }
