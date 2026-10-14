@@ -1,22 +1,15 @@
-principles 6b98d6013c721cef08843c31a575fdc9eed215e0
-
-stubs unchanged from 6035e88870aa891928f106e11f37e3783bc7d4d0 (records did not change).
-teaching is data/teaching/generic in that principles commit. intentional-about-culture has no file.
+principles 669b1023d8b2789a940b3b7bea817878c9caaa27
 
 added:
-  generic/_index.md
-  generic/customer-obsession.md
-  generic/earn-trust.md
-  generic/ownership.md
-  generic/are-right-a-lot.md
-  generic/learn-and-be-curious.md
-  generic/invent-and-simplify.md
-  generic/insist-on-high-standards.md
-  generic/hire-and-develop-the-best.md
-  generic/think-big.md
-  generic/bias-for-action.md
-  generic/frugality.md
-  generic/dive-deep.md
-  generic/have-backbone-disagree-and-commit.md
-  generic/deliver-results.md
-  generic/intentional-about-culture.md
+  usmc/_index.md
+  usmc/know-yourself-and-seek-self-improvement.md
+  usmc/be-technically-and-tactically-proficient.md
+  usmc/know-your-marines-and-look-out-for-their-welfare.md
+  usmc/keep-your-marines-informed.md
+  usmc/set-the-example.md
+  usmc/ensure-the-task-is-understood-supervised-and-accomplished.md
+  usmc/train-your-marines-as-a-team.md
+  usmc/make-sound-and-timely-decisions.md
+  usmc/develop-a-sense-of-responsibility-in-your-subordinates.md
+  usmc/employ-your-unit-in-accordance-with-its-capabilities.md
+  usmc/seek-responsibility-and-take-responsibility-for-your-actions.md

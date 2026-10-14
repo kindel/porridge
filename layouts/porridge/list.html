@@ -21,13 +21,11 @@
   {{ $default := "" }}
   {{ if $pidx.companies }}{{ $default = (index $pidx.companies 0).id }}{{ end }}
   {{ if not .Params.cardCta }}{{ errorf "content/porridge/_index.md needs cardCta" }}{{ end }}
-  {{/* Amazon's set-level Further reading comes from principles teaching. */}}
+  {{/* Amazon teaching is required. Other companies load a set index when they have one. */}}
   {{ $hasAmazon := false }}
   {{ range $pidx.companies }}{{ if eq .id "amazon" }}{{ $hasAmazon = true }}{{ end }}{{ end }}
-  {{ $teachIdxRes := resources.Get "data/principles/teaching/amazon/index.json" }}
-  {{ if and $hasAmazon (not $teachIdxRes) }}{{ errorf "missing data/principles/teaching/amazon/index.json" }}{{ end }}
-  {{ $teachIdx := dict }}
-  {{ if $teachIdxRes }}{{ $teachIdx = $teachIdxRes | transform.Unmarshal }}{{ end }}
+  {{ $amazonTeach := resources.Get "data/principles/teaching/amazon/index.json" }}
+  {{ if and $hasAmazon (not $amazonTeach) }}{{ errorf "missing data/principles/teaching/amazon/index.json" }}{{ end }}
   <link rel="stylesheet" href="{{ "css/porridge.css" | relURL }}">
   <article class="kld-topics-page lps-page tool-page">
     {{ $card := index .Site.Data.tools "porridge" }}
@@ -95,47 +93,29 @@
         </ol>
       </section>
     {{ end }}
-    {{ $amazonPrinciples := slice }}
-    {{ $genericPrinciples := slice }}
+    {{/* Further reading follows the company switch. Load every set index. */}}
     {{ range $pidx.companies }}
-      {{ if eq .id "amazon" }}{{ $amazonPrinciples = .principles }}{{ end }}
-      {{ if eq .id "generic" }}{{ $genericPrinciples = .principles }}{{ end }}
-    {{ end }}
-    {{/* Further reading follows the company switch, including when Amazon is not the default. */}}
-    {{ if $teachIdx.blog }}
-    <section class="lps-section" data-company-set="amazon"{{ if ne $default "amazon" }} hidden{{ end }} aria-labelledby="lps-blog-title">
+      {{ $co := . }}
+      {{ $teachRes := resources.Get (printf "data/principles/teaching/%s/index.json" $co.id) }}
+      {{ if $teachRes }}
+        {{ $teach := $teachRes | transform.Unmarshal }}
+        {{ if $teach.blog }}
+    <section class="lps-section" data-company-set="{{ $co.id }}"{{ if ne $co.id $default }} hidden{{ end }} aria-labelledby="{{ printf "lps-blog-title-%s" $co.id }}">
       <p class="kld-section-label">Further reading</p>
-      <h2 id="lps-blog-title">Sources and essays on the whole set.</h2>
+      <h2 id="{{ printf "lps-blog-title-%s" $co.id }}">Sources and essays on the whole set.</h2>
       <ul class="lps-blog">
-        {{ range $teachIdx.blog }}
+        {{ range $teach.blog }}
           <li>
             <a href="{{ .url }}">{{ .title }}</a>
-            {{ with .note }}<p>{{ partial "lp-tokens.html" (dict "text" . "principles" $amazonPrinciples "company" "amazon") }}</p>{{ end }}
+            {{ with .note }}<p>{{ partial "lp-tokens.html" (dict "text" . "principles" $co.principles "company" $co.id) }}</p>{{ end }}
             {{ $host := partial "reading-host.html" .url }}
             {{ with $host }}<p class="lps-blog-domain">{{ . }}</p>{{ end }}
           </li>
         {{ end }}
       </ul>
     </section>
-    {{ end }}
-    {{ $genTeachRes := resources.Get "data/principles/teaching/generic/index.json" }}
-    {{ $genTeach := dict }}
-    {{ if $genTeachRes }}{{ $genTeach = $genTeachRes | transform.Unmarshal }}{{ end }}
-    {{ if $genTeach.blog }}
-    <section class="lps-section" data-company-set="generic"{{ if ne $default "generic" }} hidden{{ end }} aria-labelledby="lps-blog-title-generic">
-      <p class="kld-section-label">Further reading</p>
-      <h2 id="lps-blog-title-generic">Sources and essays on the whole set.</h2>
-      <ul class="lps-blog">
-        {{ range $genTeach.blog }}
-          <li>
-            <a href="{{ .url }}">{{ .title }}</a>
-            {{ with .note }}<p>{{ partial "lp-tokens.html" (dict "text" . "principles" $genericPrinciples "company" "generic") }}</p>{{ end }}
-            {{ $host := partial "reading-host.html" .url }}
-            {{ with $host }}<p class="lps-blog-domain">{{ . }}</p>{{ end }}
-          </li>
         {{ end }}
-      </ul>
-    </section>
+      {{ end }}
     {{ end }}
     {{ if $frame }}
       {{ partial "app-kit/frame-end.html" . }}
