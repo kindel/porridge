@@ -70,7 +70,8 @@ class FurtherReadingTest(unittest.TestCase):
         )
         self.assertNotIn("missing data/principles/teaching/usmc/index.json", listing)
         report = read(".kindel", "last-sync.txt").splitlines()[0]
-        self.assertRegex(report, r"^principles [0-9a-f]{40}$")
+        # The sync writes a SHA, or unknown when the commits API is down.
+        self.assertRegex(report, r"^principles ([0-9a-f]{40}|unknown)$")
         self.assertNotIn("teaching/generic/index.json", listing)
         self.assertNotIn('data-company-set="amazon"', listing)
         self.assertNotIn('data-company-set="generic"', listing)
