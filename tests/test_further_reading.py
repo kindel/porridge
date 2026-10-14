@@ -55,16 +55,28 @@ class FurtherReadingTest(unittest.TestCase):
         self.assertIn('printf "lps-blog-title-%s" $co.id', self.list)
 
     def test_set_reading_loads_every_company_index(self):
-        # The hosted list used to hard-code Amazon and generic. A third
-        # company with a teaching catalog, such as usmc, never rendered.
+        # The hosted list loads each company's teaching index when the
+        # mounted principles data has that file. Amazon stays required.
+        # A missing file renders no Further reading block.
+        # .kindel/last-sync.txt records principles 669b1023, which has no
+        # data/teaching/usmc/index.json. principles#94 adds that catalog
+        # and that commit is not on main. USMC Further reading appears
+        # only after principles#94 merges and this pin moves to a main
+        # commit. This repo does not pin a branch commit.
         listing = self.list
         self.assertIn(
             'printf "data/principles/teaching/%s/index.json" $co.id',
             listing,
         )
+        self.assertIn("{{ if $teachRes }}", listing)
         self.assertIn(
             "missing data/principles/teaching/amazon/index.json",
             listing,
+        )
+        self.assertNotIn("missing data/principles/teaching/usmc/index.json", listing)
+        self.assertIn(
+            "669b1023d8b2789a940b3b7bea817878c9caaa27",
+            read(".kindel", "last-sync.txt"),
         )
         self.assertNotIn("teaching/generic/index.json", listing)
         self.assertNotIn('data-company-set="amazon"', listing)
