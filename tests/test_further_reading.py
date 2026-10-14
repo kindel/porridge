@@ -51,8 +51,26 @@ class FurtherReadingTest(unittest.TestCase):
     def test_set_page_label_and_subhead(self):
         self.assertIn('<p class="kld-section-label">%s</p>' % LABEL,
                       self.list)
-        self.assertIn('<h2 id="lps-blog-title">%s</h2>' % SET_SUBHEAD,
-                      self.list)
+        self.assertIn(SET_SUBHEAD, self.list)
+        self.assertIn('printf "lps-blog-title-%s" $co.id', self.list)
+
+    def test_set_reading_loads_every_company_index(self):
+        # The hosted list used to hard-code Amazon and generic. A third
+        # company with a teaching catalog, such as usmc, never rendered.
+        listing = self.list
+        self.assertIn(
+            'printf "data/principles/teaching/%s/index.json" $co.id',
+            listing,
+        )
+        self.assertIn(
+            "missing data/principles/teaching/amazon/index.json",
+            listing,
+        )
+        self.assertNotIn("teaching/generic/index.json", listing)
+        self.assertNotIn('data-company-set="amazon"', listing)
+        self.assertNotIn('data-company-set="generic"', listing)
+        self.assertEqual(listing.count(SET_SUBHEAD), 1)
+        self.assertEqual(listing.count('partial "lp-tokens.html"'), 1)
 
     def test_standalone_matches_principle_page(self):
         self.assertIn('<p class=\\"kld-section-label\\">%s</p>' % LABEL,
@@ -88,7 +106,7 @@ class FurtherReadingTest(unittest.TestCase):
         list_notes = list(hugo_item.finditer(self.list))
         self.assertEqual(
             [(m.group("principles"), m.group("company")) for m in list_notes],
-            [("$amazonPrinciples", '"amazon"'), ("$genericPrinciples", '"generic"')],
+            [("$co.principles", "$co.id")],
         )
         for name, src in (("single.html", self.single), ("list.html", self.list)):
             self.assertNotIn('<a class="lps-blog-domain"', src, name)

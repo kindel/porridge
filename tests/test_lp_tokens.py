@@ -30,8 +30,8 @@ class LpTokensTest(unittest.TestCase):
         # Definition, subtitle, why, calibration, examples, looks-like,
         # questions, Further reading, and Related notes.
         self.assertEqual(single.count('partial "lp-tokens.html"'), 13)
-        # Amazon and generic set-level Further reading notes.
-        self.assertEqual(listing.count('partial "lp-tokens.html"'), 2)
+        # One set-level Further reading note block, ranged per company.
+        self.assertEqual(listing.count('partial "lp-tokens.html"'), 1)
         self.assertIn("Related", single)
         self.assertIn("$rel.note", single)
 

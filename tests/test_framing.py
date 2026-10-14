@@ -97,7 +97,10 @@ class FramingTest(unittest.TestCase):
         )
         self.assertLess(listing.index('class="lps-or"'), listing.index("lps-card-list"))
         self.assertIn('partial "app-kit/frame-end.html"', listing)
-        self.assertIn("teaching/generic/index.json", listing)
+        self.assertIn(
+            'printf "data/principles/teaching/%s/index.json" $co.id',
+            listing,
+        )
         self.assertIn('partial "app-kit/hero.html"', single)
         self.assertLess(
             single.index('partial "app-kit/frame-start.html"'),
